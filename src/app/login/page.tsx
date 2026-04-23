@@ -87,14 +87,18 @@ export default function LoginPage() {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{
-            width: 52, height: 52, borderRadius: 14, background: '#2D4A6F',
+            width: 52, height: 52, borderRadius: 14, background: '#1C2226',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 14px', fontSize: 24,
-          }}>📋</div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1A1A2E', marginBottom: 4 }}>
-            Licensing Tracker
+            margin: '0 auto 14px',
+          }}>
+            <span style={{ fontWeight: 800, fontSize: 14, letterSpacing: '-0.5px' }}>
+              <span style={{ color: '#AA9682' }}>codi</span><span style={{ color: '#fff' }}>flow</span>
+            </span>
+          </div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1C2226', marginBottom: 4 }}>
+            Welcome back
           </h1>
-          <p style={{ fontSize: 13, color: '#9C998F' }}>Cotton Division — Internal</p>
+          <p style={{ fontSize: 13, color: '#7A756E' }}>Cotton Division — Internal</p>
         </div>
 
         {/* Mode tabs */}

@@ -35,16 +35,16 @@ export const PROPS: Record<string, string[]> = {
 };
 
 export const STAGE_META: Record<Stage, { icon: string; bg: string; color: string; border: string }> = {
-  "Design Sent":                { icon: "📤", bg: "#EEF0FF", color: "#4B52B8", border: "#C7CCFF" },
-  "Modifications Requested":    { icon: "✏️", bg: "#FFF5EB", color: "#B87A2B", border: "#FFD9A8" },
-  "Concept Approved":           { icon: "✅", bg: "#EEFBF4", color: "#2B8B57", border: "#A8E6C3" },
-  "PreProduction Samples PPS":  { icon: "🧪", bg: "#F5EEFF", color: "#7B3FC4", border: "#D4B8FF" },
-  "PPS Shipped":                { icon: "📦", bg: "#EBF7FF", color: "#2B6CB0", border: "#A8D8FF" },
-  "Proceed to Production":      { icon: "🏭", bg: "#FFF8E1", color: "#8D6E00", border: "#FFE082" },
-  "Production Samples":         { icon: "🔬", bg: "#FFF0F5", color: "#B8255F", border: "#FFB8D2" },
-  "Production Samples Shipped": { icon: "🚚", bg: "#E8F5E9", color: "#2E7D32", border: "#A5D6A7" },
-  "Fully Approved":             { icon: "🏆", bg: "#EEFBF0", color: "#1A7A3A", border: "#80E8A0" },
-  Archived:                     { icon: "📁", bg: "#F5F5F5", color: "#757575", border: "#E0E0E0" },
+  "Design Sent":                { icon: "📤", bg: "#F5EFE9", color: "#AA9682", border: "#D8C8B8" },
+  "Modifications Requested":    { icon: "✏️", bg: "#FAF4EC", color: "#C2A46F", border: "#E8D4B8" },
+  "Concept Approved":           { icon: "✅", bg: "#EBF5EE", color: "#5F7D6A", border: "#B8D4C0" },
+  "PreProduction Samples PPS":  { icon: "🧪", bg: "#EDF0F2", color: "#4A5A63", border: "#B8C4CC" },
+  "PPS Shipped":                { icon: "📦", bg: "#F0EDF4", color: "#7B6888", border: "#CCC0D8" },
+  "Proceed to Production":      { icon: "🏭", bg: "#F5F2EB", color: "#8A7060", border: "#D0C0AA" },
+  "Production Samples":         { icon: "🔬", bg: "#FBF0F0", color: "#A35C5C", border: "#E8C4C4" },
+  "Production Samples Shipped": { icon: "🚚", bg: "#EBF5EE", color: "#5F7D6A", border: "#B8D4C0" },
+  "Fully Approved":             { icon: "🏆", bg: "#EBF5EE", color: "#5F7D6A", border: "#80C896" },
+  Archived:                     { icon: "📁", bg: "#F5F4F2", color: "#7A756E", border: "#D8D4CE" },
 };
 
 export const BRAND_COLORS: Record<string, string> = {
@@ -57,13 +57,13 @@ export const BRAND_COLORS: Record<string, string> = {
 };
 
 export const PRIORITY_COLORS: Record<string, string> = {
-  Low: "#6BAF92",
-  Medium: "#E8A838",
-  High: "#E06B3A",
-  Urgent: "#D43C3C",
+  Low: "#5F7D6A",
+  Medium: "#C2A46F",
+  High: "#AA9682",
+  Urgent: "#A35C5C",
 };
 
-export const AVATAR_COLORS = ["#3D5A80", "#7B3FC4", "#C0392B", "#27AE60", "#D4922A", "#2C8C99", "#8B5CF6"];
+export const AVATAR_COLORS = ["#1C2226", "#AA9682", "#A35C5C", "#5F7D6A", "#C2A46F", "#4A5A63", "#C8B3A0"];
 
 export const ALL_PERMS: { key: PermKey; label: string; cat: string }[] = [
   { key: "viewRecords",   label: "View records",         cat: "View" },

@@ -34,9 +34,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       }}>
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginRight: 24 }}>
-          <span style={{ fontSize: 20 }}>📋</span>
-          <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px' }}>Licensing Tracker</span>
-          <span style={{ fontSize: 11, opacity: 0.5, marginLeft: 2 }}>Cotton Division</span>
+          <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: '#AA9682' }}>codi</span>
+          <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: '#fff' }}>flow</span>
         </div>
 
         {/* Nav links */}

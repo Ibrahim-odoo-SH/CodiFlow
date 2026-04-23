@@ -3,7 +3,7 @@ import './globals.css'
 import { AuthProvider } from '@/lib/auth-context'
 
 export const metadata: Metadata = {
-  title: 'Licensing Tracker — Cotton Division',
+  title: 'Codi-Flow — Cotton Division',
   description: 'Internal licensing approval workflow dashboard',
 }
 
