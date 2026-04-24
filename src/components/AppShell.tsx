@@ -4,11 +4,11 @@ import { useAuth } from '@/lib/auth-context'
 import Avatar from '@/components/ui/Avatar'
 
 const NAV = [
-  { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-  { href: '/board',     label: 'Board',     icon: '🗂️' },
-  { href: '/table',     label: 'Table',     icon: '📋' },
-  { href: '/approved',  label: 'Approved',  icon: '🏆' },
-  { href: '/samples',   label: 'Samples',   icon: '🧪' },
+  { href: '/dashboard', label: 'Dashboard',  abbr: 'DB' },
+  { href: '/board',     label: 'Board',      abbr: 'BO' },
+  { href: '/table',     label: 'Table',      abbr: 'TB' },
+  { href: '/approved',  label: 'Approved',   abbr: 'AP' },
+  { href: '/samples',   label: 'Samples',    abbr: 'SP' },
 ]
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -17,33 +17,116 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const { profile, can, signOut } = useAuth()
 
   const teamHref  = profile?.role === 'admin' ? '/team'      : '/profile'
-  const teamLabel = profile?.role === 'admin' ? '👥 Team'    : '👤 Profile'
+  const teamLabel = profile?.role === 'admin' ? 'Team'       : 'Profile'
   const extraNav  = profile?.role === 'admin'
-    ? [{ href: '/templates', label: '✉ Templates', icon: '' }]
+    ? [{ href: '/templates', label: 'Templates', abbr: 'TM' }]
     : []
 
-  const allNav = [...NAV, { href: teamHref, label: teamLabel, icon: '' }, ...extraNav]
+  const allNav = [...NAV, { href: teamHref, label: teamLabel, abbr: '⌂' }, ...extraNav]
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F4F3EF', display: 'flex', flexDirection: 'column' }}>
-      {/* Top nav */}
-      <header style={{
-        background: '#2D4A6F', color: '#fff', display: 'flex',
-        alignItems: 'center', padding: '0 20px', height: 52, flexShrink: 0,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+
+      {/* ── Sidebar ── */}
+      <aside style={{
+        width: 216,
+        flexShrink: 0,
+        background: '#1C2226',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        position: 'relative',
+        zIndex: 10,
       }}>
+
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginRight: 24 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-            <img src="/logo.png" alt="Codiflow" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+        <div style={{
+          padding: '22px 20px 18px',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+        }}>
+          <div style={{
+            width: 38, height: 38, borderRadius: 10,
+            background: '#fff',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            overflow: 'hidden', flexShrink: 0,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          }}>
+            <img src="/logo.png" alt="Codiflow" style={{ width: 34, height: 34, objectFit: 'contain' }} />
           </div>
-          <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px' }}>
-            <span style={{ color: '#AA9682' }}>codi</span><span style={{ color: '#fff' }}>flow</span>
-          </span>
+          <div>
+            <div style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontWeight: 600,
+              fontSize: 19,
+              lineHeight: 1,
+              letterSpacing: '0.01em',
+            }}>
+              <span style={{ color: '#AA9682' }}>codi</span>
+              <span style={{ color: '#fff' }}>flow</span>
+            </div>
+            <div style={{
+              fontSize: 9,
+              color: 'rgba(255,255,255,0.28)',
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              marginTop: 3,
+              fontWeight: 400,
+            }}>
+              Cotton Division
+            </div>
+          </div>
+        </div>
+
+        {/* New Record CTA */}
+        {can('createRecords') && (
+          <div style={{ padding: '14px 14px 6px' }}>
+            <button
+              onClick={() => router.push('/table?new=1')}
+              style={{
+                width: '100%',
+                padding: '9px 0',
+                background: '#AA9682',
+                border: 'none',
+                borderRadius: 8,
+                color: '#fff',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                letterSpacing: '0.04em',
+                transition: 'background 0.18s, transform 0.12s',
+                textTransform: 'uppercase',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#C8B3A0'
+                e.currentTarget.style.transform = 'translateY(-1px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#AA9682'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+            >
+              + New Record
+            </button>
+          </div>
+        )}
+
+        {/* Divider label */}
+        <div style={{
+          padding: '16px 20px 6px',
+          fontSize: 9,
+          color: 'rgba(255,255,255,0.2)',
+          letterSpacing: '0.16em',
+          textTransform: 'uppercase',
+          fontWeight: 500,
+        }}>
+          Navigate
         </div>
 
         {/* Nav links */}
-        <nav style={{ display: 'flex', gap: 2, flex: 1 }}>
+        <nav style={{ flex: 1, overflowY: 'auto', padding: '0 8px' }}>
           {allNav.map((item) => {
             const active = pathname === item.href ||
               (item.href !== '/dashboard' && pathname.startsWith(item.href))
@@ -52,58 +135,116 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 onClick={() => router.push(item.href)}
                 style={{
-                  padding: '6px 13px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                  background: active ? 'rgba(255,255,255,0.18)' : 'transparent',
-                  color: active ? '#fff' : 'rgba(255,255,255,0.72)',
-                  fontWeight: active ? 600 : 400, fontSize: 13,
-                  transition: 'all 0.15s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  width: '100%',
+                  padding: '9px 12px',
+                  marginBottom: 2,
+                  border: 'none',
+                  borderRadius: 8,
+                  background: active ? 'rgba(170,150,130,0.14)' : 'transparent',
+                  color: active ? '#AA9682' : 'rgba(255,255,255,0.45)',
+                  fontSize: 13,
+                  fontWeight: active ? 500 : 400,
+                  letterSpacing: '0.01em',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.14s',
+                  position: 'relative',
                 }}
-                onMouseEnter={(e) => { if (!active) (e.currentTarget.style.background = 'rgba(255,255,255,0.1)') }}
-                onMouseLeave={(e) => { if (!active) (e.currentTarget.style.background = 'transparent') }}
+                onMouseEnter={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.color = 'rgba(255,255,255,0.8)'
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.color = 'rgba(255,255,255,0.45)'
+                    e.currentTarget.style.background = 'transparent'
+                  }
+                }}
               >
-                {item.label}
+                {active && (
+                  <span style={{
+                    position: 'absolute',
+                    left: 0, top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: 3, height: 16,
+                    background: '#AA9682',
+                    borderRadius: '0 2px 2px 0',
+                  }} />
+                )}
+                <span style={{ marginLeft: active ? 6 : 0, transition: 'margin 0.14s' }}>
+                  {item.label}
+                </span>
               </button>
             )
           })}
         </nav>
 
-        {/* Right side */}
+        {/* User section */}
         {profile && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {/* Global New Record button */}
-            {can('createRecords') && (
-              <button
-                onClick={() => router.push('/table?new=1')}
-                style={{
-                  background: '#3B82A0', border: '1px solid rgba(255,255,255,0.3)',
-                  color: '#fff', borderRadius: 7, padding: '5px 14px',
-                  fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                  transition: 'background 0.15s', letterSpacing: '-0.2px',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#4A9AB8' }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#3B82A0' }}
-              >
-                ＋ New Record
-              </button>
-            )}
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.05)',
+            padding: '12px 14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+          }}>
             <Avatar name={profile.full_name} size={30} />
-            <span style={{ fontSize: 13, opacity: 0.85 }}>{profile.full_name}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.85)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {profile.full_name}
+              </div>
+              <div style={{
+                fontSize: 10, color: 'rgba(255,255,255,0.3)',
+                textTransform: 'capitalize', letterSpacing: '0.04em',
+              }}>
+                {profile.role}
+              </div>
+            </div>
             <button
               onClick={signOut}
+              title="Sign out"
               style={{
-                background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)',
-                color: '#fff', borderRadius: 6, padding: '4px 10px', fontSize: 12, cursor: 'pointer',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                color: 'rgba(255,255,255,0.35)',
+                borderRadius: 6,
+                padding: '5px 9px',
+                fontSize: 10,
+                cursor: 'pointer',
+                letterSpacing: '0.06em',
+                flexShrink: 0,
+                transition: 'all 0.14s',
+                textTransform: 'uppercase',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#A35C5C'
+                e.currentTarget.style.borderColor = 'rgba(163,92,92,0.3)'
+                e.currentTarget.style.background = 'rgba(163,92,92,0.08)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'rgba(255,255,255,0.35)'
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'
+                e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
               }}
             >
-              Sign out
+              Out
             </button>
           </div>
         )}
-      </header>
+      </aside>
 
-      <main style={{ flex: 1, overflow: 'auto' }}>
+      {/* ── Main content ── */}
+      <main style={{ flex: 1, overflow: 'auto', background: '#F7F6F4', display: 'flex', flexDirection: 'column' }}>
         {children}
       </main>
+
     </div>
   )
 }

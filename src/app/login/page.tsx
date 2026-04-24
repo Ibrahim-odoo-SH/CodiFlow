@@ -65,35 +65,58 @@ export default function LoginPage() {
 
   const inputStyle = {
     width: '100%',
-    padding: '10px 12px',
-    border: '1px solid #E5E2DA',
+    padding: '10px 14px',
+    border: '1px solid #D8D4CE',
     borderRadius: 8,
-    background: '#FAFAF8',
+    background: '#F7F6F4',
     fontSize: 14,
     outline: 'none',
     boxSizing: 'border-box' as const,
-    transition: 'border-color 0.15s',
+    transition: 'border-color 0.18s, background 0.18s',
+    color: '#1C2226',
   }
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#F4F3EF',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      minHeight: '100vh',
+      background: '#1C2226',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
+      overflow: 'hidden',
     }}>
+      {/* Background decoration */}
       <div style={{
-        background: '#fff', border: '1px solid #E5E2DA', borderRadius: 16,
-        padding: 40, width: 380, boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+        position: 'absolute', top: '-20%', right: '-10%',
+        width: 500, height: 500, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(170,150,130,0.08) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
+      <div style={{
+        position: 'absolute', bottom: '-20%', left: '-10%',
+        width: 600, height: 600, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(170,150,130,0.05) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
+
+      <div style={{
+        background: '#F7F6F4', border: '1px solid #D8D4CE', borderRadius: 20,
+        padding: '40px 40px 36px', width: 400,
+        boxShadow: '0 24px 80px rgba(0,0,0,0.35)',
+        position: 'relative', zIndex: 1,
+        animation: 'fadeIn 0.3s ease-out',
       }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <img src="/logo.png" alt="Codiflow" style={{ width: 100, height: 100, objectFit: 'contain', margin: '0 auto 6px', display: 'block' }} />
-          <p style={{ fontSize: 13, color: '#7A756E', marginTop: 0 }}>Cotton Division — Internal</p>
+          <img src="/logo.png" alt="Codiflow" style={{ width: 90, height: 90, objectFit: 'contain', margin: '0 auto 4px', display: 'block' }} />
+          <p style={{ fontSize: 11, color: '#7A756E', marginTop: 4, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500 }}>Cotton Division · Internal</p>
         </div>
 
         {/* Mode tabs */}
         {!signedUp && mode !== 'forgot' && (
           <div style={{
-            display: 'flex', background: '#F4F3EF', borderRadius: 10,
+            display: 'flex', background: '#EFEDE9', borderRadius: 10,
             padding: 4, marginBottom: 24, gap: 4,
           }}>
             {(['signin', 'signup'] as Mode[]).map((m) => (
@@ -105,7 +128,7 @@ export default function LoginPage() {
                   flex: 1, padding: '8px 0', borderRadius: 8, border: 'none',
                   fontWeight: 600, fontSize: 13, cursor: 'pointer',
                   background: mode === m ? '#fff' : 'transparent',
-                  color: mode === m ? '#2D4A6F' : '#9C998F',
+                  color: mode === m ? '#1C2226' : '#7A756E',
                   boxShadow: mode === m ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
                   transition: 'all 0.15s',
                 }}
