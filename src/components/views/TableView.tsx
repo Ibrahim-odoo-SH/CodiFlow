@@ -232,8 +232,20 @@ export default function TableView({ initialRecords, team, initialFilters }: Prop
                           const { data: upd } = await supabase.from('records').update({ priority: e.target.value, updated_by: profile?.id }).eq('id', r.id).select().single()
                           if (upd) setRecords((prev) => prev.map((x) => x.id === r.id ? upd : x))
                         }}
-                        style={{ padding: '3px 6px', border: '1px solid #E5E2DA', borderRadius: 6, fontSize: 12, background: '#fff', cursor: 'pointer' }}>
-                        {['Low', 'Medium', 'High', 'Urgent'].map((p) => <option key={p}>{p}</option>)}
+                        style={{
+                          padding: '3px 10px',
+                          border: 'none',
+                          borderRadius: 20,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          outline: 'none',
+                          background: PRIORITY_COLORS[r.priority] ?? '#ccc',
+                          color: '#fff',
+                          appearance: 'none' as const,
+                          WebkitAppearance: 'none' as const,
+                        }}>
+                        {['Low', 'Medium', 'High', 'Urgent'].map((p) => <option key={p} style={{ background: '#fff', color: '#1C2226' }}>{p}</option>)}
                       </select>
                     ) : <PriorityDot priority={r.priority} showLabel />}
                   </td>

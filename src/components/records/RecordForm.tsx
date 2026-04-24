@@ -221,8 +221,22 @@ export default function RecordForm({
           </select>
         ))}
         {group('Priority', (
-          <select style={fieldStyle} value={data.priority} onChange={(e) => set('priority', e.target.value as any)}>
-            {PRIORITIES.map((p) => <option key={p}>{p}</option>)}
+          <select
+            value={data.priority}
+            onChange={(e) => set('priority', e.target.value as any)}
+            style={{
+              ...fieldStyle,
+              background: ({ Low: '#5F7D6A', Medium: '#C2A46F', High: '#AA9682', Urgent: '#A35C5C' } as Record<string,string>)[data.priority] ?? '#ccc',
+              color: '#fff',
+              fontWeight: 600,
+              border: 'none',
+              borderRadius: 20,
+              padding: '6px 14px',
+              cursor: 'pointer',
+              appearance: 'none' as const,
+              WebkitAppearance: 'none' as const,
+            }}>
+            {PRIORITIES.map((p) => <option key={p} style={{ background: '#fff', color: '#1C2226' }}>{p}</option>)}
           </select>
         ))}
       </div>
