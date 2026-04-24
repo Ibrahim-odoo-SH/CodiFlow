@@ -16,6 +16,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const { profile, can, signOut } = useAuth()
 
+  async function handleSignOut() {
+    await signOut()
+    router.push('/login')
+  }
+
   const teamHref  = profile?.role === 'admin' ? '/team'      : '/profile'
   const teamLabel = profile?.role === 'admin' ? 'Team'       : 'Profile'
   const extraNav  = profile?.role === 'admin'
@@ -208,7 +213,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             </div>
             <button
-              onClick={signOut}
+              onClick={handleSignOut}
               title="Sign out"
               style={{
                 background: 'rgba(255,255,255,0.05)',
