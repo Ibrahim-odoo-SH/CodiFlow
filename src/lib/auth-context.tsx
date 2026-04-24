@@ -11,7 +11,7 @@ interface AuthContextType {
   can: (key: PermKey) => boolean
   signInWithMagicLink: (email: string) => Promise<{ error: any }>
   signInWithPassword: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string) => Promise<{ error: any }>
+  signUp: (email: string, password: string) => Promise<{ error: any; session: any }>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
 }
@@ -70,14 +70,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signUp(email: string, password: string) {
     if (!email.endsWith('@cottondivision.com')) {
-      return { error: { message: 'Only @cottondivision.com emails are allowed.' } }
+      return { error: { message: 'Only @cottondivision.com emails are allowed.' }, session: null }
     }
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
     })
-    return { error }
+    return { error, session: data.session }
   }
 
   async function signOut() {

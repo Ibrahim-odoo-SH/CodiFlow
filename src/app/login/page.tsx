@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { createClient } from '@/lib/supabase/client'
 
@@ -8,6 +9,7 @@ type Mode = 'signin' | 'signup' | 'forgot'
 export default function LoginPage() {
   const { signInWithPassword, signUp } = useAuth()
   const supabase = createClient()
+  const router = useRouter()
   const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -48,10 +50,11 @@ export default function LoginPage() {
       setLoading(false)
       if (error) setError(error.message)
     } else if (mode === 'signup') {
-      const { error } = await signUp(trimmedEmail, password)
+      const { error, session } = await signUp(trimmedEmail, password)
       setLoading(false)
       if (error) setError(error.message)
-      else setSignedUp(true)
+      else if (session) router.replace('/dashboard') // email confirmation is OFF → already signed in
+      else setSignedUp(true) // email confirmation is ON → show "check email"
     } else {
       // forgot password
       const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
@@ -197,45 +200,49 @@ export default function LoginPage() {
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} autoComplete="on">
               {/* Email */}
               <div style={{ marginBottom: 14 }}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: '#5A5A6A', display: 'block', marginBottom: 6 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#7A756E', display: 'block', marginBottom: 6 }}>
                   Work Email
                 </label>
                 <input
                   type="email"
+                  name="email"
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@cottondivision.com"
                   required
                   style={inputStyle}
-                  onFocus={(e) => (e.target.style.borderColor = '#2D4A6F')}
-                  onBlur={(e) => (e.target.style.borderColor = '#E5E2DA')}
+                  onFocus={(e) => { e.target.style.borderColor = '#1C2226'; e.target.style.background = '#fff' }}
+                  onBlur={(e) => { e.target.style.borderColor = '#D8D4CE'; e.target.style.background = '#F7F6F4' }}
                 />
               </div>
 
               {/* Password */}
               <div style={{ marginBottom: mode === 'signup' ? 14 : 6 }}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: '#5A5A6A', display: 'block', marginBottom: 6 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#7A756E', display: 'block', marginBottom: 6 }}>
                   Password
                 </label>
                 <input
                   type="password"
+                  name="password"
+                  autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={mode === 'signup' ? 'Min. 8 characters' : '••••••••'}
                   required
                   style={inputStyle}
-                  onFocus={(e) => (e.target.style.borderColor = '#2D4A6F')}
-                  onBlur={(e) => (e.target.style.borderColor = '#E5E2DA')}
+                  onFocus={(e) => { e.target.style.borderColor = '#1C2226'; e.target.style.background = '#fff' }}
+                  onBlur={(e) => { e.target.style.borderColor = '#D8D4CE'; e.target.style.background = '#F7F6F4' }}
                 />
               </div>
 
               {/* Forgot password link (sign-in only) */}
               {mode === 'signin' && (
                 <div style={{ textAlign: 'right', marginBottom: 16 }}>
-                  <button type="button" onClick={() => switchMode('forgot')} style={{ fontSize: 12, color: '#2D4A6F', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+                  <button type="button" onClick={() => switchMode('forgot')} style={{ fontSize: 12, color: '#AA9682', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
                     Forgot password?
                   </button>
                 </div>
@@ -244,18 +251,20 @@ export default function LoginPage() {
               {/* Confirm password (sign-up only) */}
               {mode === 'signup' && (
                 <div style={{ marginBottom: 20 }}>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: '#5A5A6A', display: 'block', marginBottom: 6 }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#7A756E', display: 'block', marginBottom: 6 }}>
                     Confirm Password
                   </label>
                   <input
                     type="password"
+                    name="confirm-password"
+                    autoComplete="new-password"
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
                     placeholder="••••••••"
                     required
                     style={inputStyle}
-                    onFocus={(e) => (e.target.style.borderColor = '#2D4A6F')}
-                    onBlur={(e) => (e.target.style.borderColor = '#E5E2DA')}
+                    onFocus={(e) => { e.target.style.borderColor = '#1C2226'; e.target.style.background = '#fff' }}
+                    onBlur={(e) => { e.target.style.borderColor = '#D8D4CE'; e.target.style.background = '#F7F6F4' }}
                   />
                 </div>
               )}
