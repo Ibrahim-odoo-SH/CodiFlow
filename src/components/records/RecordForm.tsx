@@ -226,7 +226,7 @@ export default function RecordForm({
             onChange={(e) => set('priority', e.target.value as any)}
             style={{
               ...fieldStyle,
-              background: ({ Low: '#5F7D6A', Medium: '#C2A46F', High: '#AA9682', Urgent: '#A35C5C' } as Record<string,string>)[data.priority] ?? '#ccc',
+              background: ({ Low: '#5F7D6A', Medium: '#C2A46F', High: '#AA9682', Urgent: '#A35C5C' } as Record<string,string>)[data.priority as string] ?? '#ccc',
               color: '#fff',
               fontWeight: 600,
               border: 'none',
