@@ -82,8 +82,19 @@ export default function TeamView({ team: initialTeam }: Props) {
       if (!res.ok) {
         setAddError(json.error ?? 'Failed to send invite')
       } else {
-        if (json.profile) setTeam((prev) => [...prev, json.profile])
-        setAddSuccess(`Invitation sent to ${addEmail}. They'll receive an email to set their password.`)
+        // Only add to list if not already there
+        if (json.profile) {
+          setTeam((prev) => {
+            const exists = prev.some((m) => m.id === json.profile.id)
+            return exists
+              ? prev.map((m) => m.id === json.profile.id ? json.profile : m)
+              : [...prev, json.profile]
+          })
+        }
+        const msg = json.alreadyExisted
+          ? `${addEmail} already had an account — a password-reset email was sent so they can set their password and sign in.`
+          : `Invitation sent to ${addEmail}. They'll receive an email to accept and set their password.`
+        setAddSuccess(msg)
         setAddEmail('')
         setAddName('')
       }
