@@ -12,51 +12,60 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
   const [sessionReady, setSessionReady] = useState(false)
-  const [status, setStatus] = useState('Verifying link…')
+  const [expired, setExpired] = useState(false)
   const ready = useRef(false)
+  const fromInvite = useRef(false)
 
   useEffect(() => {
-    // Sign out any existing session first so recovery token takes over cleanly
-    supabase.auth.signOut().then(() => {
-      // Now listen for PASSWORD_RECOVERY event from the auth state change
+    // Detect invite vs recovery from the URL
+    fromInvite.current = new URLSearchParams(window.location.search).get('from') === 'invite'
+
+    if (fromInvite.current) {
+      // ── INVITE FLOW ──────────────────────────────────────────────
+      // The auth callback already exchanged the code and signed the user in.
+      // We just need to confirm there is an active session, then show the form.
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'PASSWORD_RECOVERY' && session && !ready.current) {
+        if ((event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') && session && !ready.current) {
           ready.current = true
           setSessionReady(true)
         }
       })
 
-      // Also check if there's already a recovery session (page was refreshed)
+      // Also check immediately in case the SIGNED_IN event already fired
       supabase.auth.getSession().then(({ data }) => {
         if (data.session && !ready.current) {
           ready.current = true
           setSessionReady(true)
         } else if (!data.session) {
-          // Wait up to 5 seconds for the auth event, then give up
-          setTimeout(() => {
-            if (!ready.current) {
-              setStatus('Link expired or already used.')
-            }
-          }, 5000)
+          setTimeout(() => { if (!ready.current) setExpired(true) }, 5000)
         }
       })
 
       return () => subscription.unsubscribe()
-    })
-  }, [])
+    } else {
+      // ── PASSWORD RECOVERY FLOW ────────────────────────────────────
+      // Sign out any stale session so the recovery token can take over cleanly.
+      supabase.auth.signOut().then(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          if (event === 'PASSWORD_RECOVERY' && session && !ready.current) {
+            ready.current = true
+            setSessionReady(true)
+          }
+        })
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '10px 14px',
-    border: '1px solid #D8D4CE',
-    borderRadius: 8,
-    background: '#F7F6F4',
-    fontSize: 14,
-    outline: 'none',
-    boxSizing: 'border-box',
-    color: '#1C2226',
-    transition: 'border-color 0.18s, background 0.18s',
-  }
+        supabase.auth.getSession().then(({ data }) => {
+          if (data.session && !ready.current) {
+            ready.current = true
+            setSessionReady(true)
+          } else if (!data.session) {
+            setTimeout(() => { if (!ready.current) setExpired(true) }, 5000)
+          }
+        })
+
+        return () => subscription.unsubscribe()
+      })
+    }
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -71,13 +80,23 @@ export default function ResetPasswordPage() {
         setError(error.message)
       } else {
         setDone(true)
-        setTimeout(() => router.replace('/login'), 2500)
+        // Invite: already signed in → go straight to dashboard
+        // Recovery: redirect to login so they sign in fresh
+        setTimeout(() => router.replace(fromInvite.current ? '/dashboard' : '/login'), 2000)
       }
     } catch (err: any) {
-      setError(err?.message ?? 'Something went wrong. Try requesting a new reset link.')
+      setError(err?.message ?? 'Something went wrong.')
     } finally {
       setLoading(false)
     }
+  }
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '10px 14px',
+    border: '1px solid #D8D4CE', borderRadius: 8,
+    background: '#F7F6F4', fontSize: 14, outline: 'none',
+    boxSizing: 'border-box', color: '#1C2226',
+    transition: 'border-color 0.18s, background 0.18s',
   }
 
   return (
@@ -87,8 +106,8 @@ export default function ResetPasswordPage() {
       position: 'relative', overflow: 'hidden',
     }}>
       <div style={{
-        position: 'absolute', top: '-20%', right: '-10%',
-        width: 500, height: 500, borderRadius: '50%',
+        position: 'absolute', top: '-20%', right: '-10%', width: 500, height: 500,
+        borderRadius: '50%',
         background: 'radial-gradient(circle, rgba(170,150,130,0.08) 0%, transparent 70%)',
         pointerEvents: 'none',
       }} />
@@ -99,42 +118,57 @@ export default function ResetPasswordPage() {
         boxShadow: '0 24px 80px rgba(0,0,0,0.35)',
         position: 'relative', zIndex: 1,
       }}>
+        {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <img src="/logo.png" alt="Codiflow" style={{ width: 80, height: 80, objectFit: 'contain', margin: '0 auto 6px', display: 'block' }} />
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1C2226', marginBottom: 4 }}>Set New Password</h1>
-          <p style={{ fontSize: 13, color: '#7A756E' }}>Choose a strong password for your account</p>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1C2226', marginBottom: 4 }}>
+            {fromInvite.current ? 'Welcome to Codiflow' : 'Set New Password'}
+          </h1>
+          <p style={{ fontSize: 13, color: '#7A756E' }}>
+            {fromInvite.current ? 'Create a password to activate your account' : 'Choose a strong password for your account'}
+          </p>
         </div>
 
+        {/* Done state */}
         {done ? (
           <div style={{ background: '#EBF5EE', border: '1px solid #B8D4C0', borderRadius: 10, padding: 20, textAlign: 'center' }}>
             <div style={{ fontSize: 32, marginBottom: 10 }}>✅</div>
-            <p style={{ fontWeight: 600, color: '#5F7D6A', marginBottom: 6 }}>Password updated!</p>
-            <p style={{ fontSize: 13, color: '#5F7D6A' }}>Redirecting to login…</p>
+            <p style={{ fontWeight: 600, color: '#5F7D6A', marginBottom: 6 }}>Password saved!</p>
+            <p style={{ fontSize: 13, color: '#5F7D6A' }}>
+              {fromInvite.current ? 'Taking you to the dashboard…' : 'Redirecting to sign in…'}
+            </p>
           </div>
+
+        /* Link expired state */
+        ) : expired ? (
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <div style={{ fontSize: 32, marginBottom: 12 }}>⚠️</div>
+            <p style={{ fontSize: 13, color: '#A35C5C', marginBottom: 16 }}>Link expired or already used.</p>
+            <p style={{ fontSize: 12, color: '#7A756E', marginBottom: 16, lineHeight: 1.5 }}>
+              Ask your admin to re-send the invite, or use "Forgot password?" on the login page.
+            </p>
+            <button
+              onClick={() => router.replace('/login')}
+              style={{ fontSize: 13, color: '#AA9682', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              Go to login page
+            </button>
+          </div>
+
+        /* Verifying state */
         ) : !sessionReady ? (
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
-            {status === 'Verifying link…' ? (
-              <>
-                <div style={{ fontSize: 24, marginBottom: 12 }}>⏳</div>
-                <p style={{ fontSize: 13, color: '#7A756E' }}>{status}</p>
-              </>
-            ) : (
-              <>
-                <div style={{ fontSize: 24, marginBottom: 12 }}>⚠️</div>
-                <p style={{ fontSize: 13, color: '#A35C5C', marginBottom: 16 }}>{status}</p>
-                <button
-                  onClick={() => router.replace('/login')}
-                  style={{ fontSize: 13, color: '#AA9682', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-                >
-                  Request a new reset link
-                </button>
-              </>
-            )}
+            <div style={{ fontSize: 24, marginBottom: 12, opacity: 0.5 }}>⏳</div>
+            <p style={{ fontSize: 13, color: '#7A756E' }}>Verifying link…</p>
           </div>
+
+        /* Password form */
         ) : (
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#7A756E', display: 'block', marginBottom: 6 }}>New Password</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#7A756E', display: 'block', marginBottom: 6 }}>
+                {fromInvite.current ? 'Create Password' : 'New Password'}
+              </label>
               <input
                 type="password"
                 name="new-password"
@@ -182,7 +216,7 @@ export default function ResetPasswordPage() {
                 transition: 'background 0.18s',
               }}
             >
-              {loading ? 'Updating…' : 'Update Password'}
+              {loading ? 'Saving…' : fromInvite.current ? 'Activate Account' : 'Update Password'}
             </button>
           </form>
         )}

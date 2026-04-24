@@ -42,9 +42,13 @@ export async function POST(request: NextRequest) {
   )
 
   // --- Try to invite as a new user first ---
+  // redirectTo sends the user through our auth callback which routes them to /reset-password
   const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(
     cleanEmail,
-    { data: { full_name: cleanName } }
+    {
+      data: { full_name: cleanName },
+      redirectTo: `${SITE_URL}/auth/callback?type=invite`,
+    }
   )
 
   // --- Handle "already registered" gracefully ---
