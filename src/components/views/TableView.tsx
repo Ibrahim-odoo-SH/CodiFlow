@@ -16,7 +16,6 @@ interface Props {
   initialRecords: LicRecord[]
   team: Profile[]
   initialFilters?: Partial<Filters>
-  thumbnails?: Record<string, string>
 }
 
 const DEFAULT_FILTERS: Filters = { search: '', brand: '', property: '', stage: '', owner: '', priority: '', waitingOn: '', showArchived: false, showReminders: false }
@@ -45,7 +44,7 @@ function applyFilters(records: LicRecord[], f: Filters): LicRecord[] {
   })
 }
 
-export default function TableView({ initialRecords, team, initialFilters, thumbnails = {} }: Props) {
+export default function TableView({ initialRecords, team, initialFilters }: Props) {
   const { profile, can } = useAuth()
   const supabase = createClient()
   const [records, setRecords] = useState<LicRecord[]>(initialRecords)
@@ -53,8 +52,28 @@ export default function TableView({ initialRecords, team, initialFilters, thumbn
   const [selected, setSelected] = useState<LicRecord | null>(null)
   const [creating, setCreating] = useState(false)
   const [notifying, setNotifying] = useState<LicRecord | null>(null)
+  const [thumbnails, setThumbnails] = useState<Record<string, string>>({})
 
   const owners = useMemo(() => [...new Set(records.map((r) => r.owner_name_snapshot).filter(Boolean))], [records])
+
+  // Fetch thumbnails client-side using the user's own session (respects RLS for all roles)
+  useEffect(() => {
+    supabase
+      .from('record_attachments')
+      .select('record_id, public_url, file_type, is_primary')
+      .filter('file_type', 'ilike', 'image/%')
+      .then(({ data }) => {
+        if (!data) return
+        const map: Record<string, string> = {}
+        for (const row of data) {
+          if (!map[row.record_id]) map[row.record_id] = row.public_url
+        }
+        for (const row of data) {
+          if (row.is_primary) map[row.record_id] = row.public_url
+        }
+        setThumbnails(map)
+      })
+  }, [])
 
   // Auto-open create modal when navigated here with ?new=1
   useEffect(() => {
