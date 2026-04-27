@@ -34,6 +34,7 @@ export default function RecordDrawer({ record, team, onClose, onUpdate, onDelete
   const [uploading, setUploading] = useState(false)
   const [showNotify, setShowNotify] = useState(false)
   const [settingCover, setSettingCover] = useState<string | null>(null)
+  const [autoEmailSent, setAutoEmailSent] = useState<string | null>(null)
 
   useEffect(() => {
     loadComments()
@@ -61,7 +62,40 @@ export default function RecordDrawer({ record, team, onClose, onUpdate, onDelete
 
   async function handleStageChange(stage: string) {
     const { data: updated } = await supabase.from('records').update({ normalized_stage: stage, updated_by: profile?.id }).eq('id', record.id).select().single()
-    if (updated) onUpdate(updated)
+    if (updated) {
+      onUpdate(updated)
+      // Fire auto-emails in the background — don't block the UI
+      void (async () => {
+        try {
+          const { data: tmpl } = await supabase
+            .from('email_templates')
+            .select('auto_recipient_ids')
+            .eq('stage', stage)
+            .maybeSingle()
+          const ids: string[] = tmpl?.auto_recipient_ids ?? []
+          if (ids.length === 0) return
+          const { data: recipients } = await supabase
+            .from('profiles')
+            .select('email, full_name')
+            .in('id', ids)
+            .eq('is_active', true)
+          const emails = (recipients ?? []).map((p) => p.email).filter(Boolean)
+          if (emails.length === 0) return
+          await fetch('/api/notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              record: updated,
+              recipients: emails,
+              senderName: profile?.full_name ?? 'Codiflow',
+              senderEmail: profile?.email ?? '',
+            }),
+          })
+          setAutoEmailSent(`📧 Auto-email sent to ${emails.length} recipient${emails.length > 1 ? 's' : ''}`)
+          setTimeout(() => setAutoEmailSent(null), 4000)
+        } catch { /* silent — email failure should never block workflow */ }
+      })()
+    }
   }
 
   async function handlePriorityChange(priority: string) {
@@ -143,6 +177,20 @@ export default function RecordDrawer({ record, team, onClose, onUpdate, onDelete
   return (
     <>
       <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.25)', zIndex: 200 }} onClick={onClose} />
+
+      {/* Auto-email toast */}
+      {autoEmailSent && (
+        <div style={{
+          position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)',
+          background: '#1C2226', color: '#fff', borderRadius: 10,
+          padding: '10px 20px', fontSize: 13, fontWeight: 500,
+          zIndex: 210, boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+          whiteSpace: 'nowrap', pointerEvents: 'none',
+        }}>
+          {autoEmailSent}
+        </div>
+      )}
+
       <div className="drawer-enter" style={{
         position: 'fixed', top: 0, right: 0, bottom: 0, width: 540,
         background: '#fff', zIndex: 201, display: 'flex', flexDirection: 'column',

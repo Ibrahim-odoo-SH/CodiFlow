@@ -4,10 +4,18 @@ import { createClient } from '@/lib/supabase/client'
 import { STAGES, STAGE_META } from '@/lib/constants'
 import type { Stage } from '@/lib/types'
 
+interface TeamMember {
+  id: string
+  full_name: string
+  email: string
+  role: string
+}
+
 interface EmailTemplate {
   stage: string
   subject_prefix: string
   intro_message: string
+  auto_recipient_ids: string[]
   // Product Details
   show_licensor_ref: boolean
   show_product_type: boolean
@@ -31,6 +39,7 @@ interface EmailTemplate {
 const DEFAULTS: Omit<EmailTemplate, 'stage'> = {
   subject_prefix: '',
   intro_message: '',
+  auto_recipient_ids: [],
   show_licensor_ref: true,
   show_product_type: true,
   show_gender: false,
@@ -49,9 +58,10 @@ const DEFAULTS: Omit<EmailTemplate, 'stage'> = {
 
 interface Props {
   initialTemplates: EmailTemplate[]
+  team: TeamMember[]
 }
 
-export default function TemplatesView({ initialTemplates }: Props) {
+export default function TemplatesView({ initialTemplates, team }: Props) {
   const supabase = createClient()
   const [templates, setTemplates] = useState<Record<string, EmailTemplate>>(
     Object.fromEntries(initialTemplates.map((t) => [t.stage, t]))
@@ -71,9 +81,17 @@ export default function TemplatesView({ initialTemplates }: Props) {
     setSaved(false)
   }
 
+  function toggleRecipient(userId: string) {
+    const ids = current.auto_recipient_ids ?? []
+    const next = ids.includes(userId)
+      ? ids.filter((id) => id !== userId)
+      : [...ids, userId]
+    update('auto_recipient_ids', next)
+  }
+
   async function handleSave() {
     setSaving(true)
-    const payload = { ...current, stage: selected }
+    const payload = { ...current, stage: selected, auto_recipient_ids: current.auto_recipient_ids ?? [] }
     const { error } = await supabase
       .from('email_templates')
       .upsert(payload, { onConflict: 'stage' })
@@ -120,7 +138,7 @@ export default function TemplatesView({ initialTemplates }: Props) {
     label,
     hint,
   }: {
-    field: keyof Omit<EmailTemplate, 'stage' | 'subject_prefix' | 'intro_message'>
+    field: keyof Omit<EmailTemplate, 'stage' | 'subject_prefix' | 'intro_message' | 'auto_recipient_ids'>
     label: string
     hint?: string
   }) {
@@ -160,6 +178,8 @@ export default function TemplatesView({ initialTemplates }: Props) {
     )
   }
 
+  const selectedRecipientCount = (current.auto_recipient_ids ?? []).length
+
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 52px)', overflow: 'hidden' }}>
 
@@ -176,6 +196,7 @@ export default function TemplatesView({ initialTemplates }: Props) {
           {editableStages.map((stage) => {
             const m = STAGE_META[stage as Stage]
             const hasCustom = !!templates[stage]
+            const recipientCount = (templates[stage]?.auto_recipient_ids ?? []).length
             const isActive = selected === stage
             return (
               <button
@@ -200,9 +221,19 @@ export default function TemplatesView({ initialTemplates }: Props) {
                     {stage.replace('PreProduction Samples ', '').replace('Modifications Requested', 'Modifications')}
                   </div>
                 </div>
-                {hasCustom && (
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#2D4A6F', flexShrink: 0 }} />
-                )}
+                <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
+                  {recipientCount > 0 && (
+                    <span style={{
+                      fontSize: 10, fontWeight: 700, color: '#AA9682',
+                      background: '#F5EFE9', borderRadius: 20, padding: '1px 6px',
+                    }}>
+                      {recipientCount} 👤
+                    </span>
+                  )}
+                  {hasCustom && (
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#2D4A6F' }} />
+                  )}
+                </div>
               </button>
             )
           })}
@@ -260,6 +291,98 @@ export default function TemplatesView({ initialTemplates }: Props) {
               onChange={(e) => update('intro_message', e.target.value)}
               placeholder={`e.g. "Please find below the latest update for this product."`}
             />
+          </div>
+
+          {/* Auto-send Recipients */}
+          <div style={{ background: '#fff', border: '1px solid #E5E2DA', borderRadius: 12, padding: 20, marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A2E' }}>⚡ Auto-send Recipients</div>
+              {selectedRecipientCount > 0 && (
+                <span style={{
+                  fontSize: 11, fontWeight: 700, color: '#AA9682',
+                  background: '#F5EFE9', borderRadius: 20, padding: '3px 10px',
+                }}>
+                  {selectedRecipientCount} selected
+                </span>
+              )}
+            </div>
+            <div style={{ fontSize: 12, color: '#9C998F', marginBottom: 16, lineHeight: 1.6 }}>
+              Selected users automatically receive this email whenever a record moves to <strong style={{ color: '#5A5A6A' }}>{selected}</strong>. No manual action needed.
+            </div>
+
+            {team.length === 0 ? (
+              <div style={{ fontSize: 13, color: '#9C998F', padding: '12px 0' }}>No active team members found.</div>
+            ) : (
+              <div>
+                {team.map((member) => {
+                  const isSelected = (current.auto_recipient_ids ?? []).includes(member.id)
+                  return (
+                    <div
+                      key={member.id}
+                      onClick={() => toggleRecipient(member.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        padding: '10px 12px', borderRadius: 8, cursor: 'pointer',
+                        marginBottom: 4,
+                        background: isSelected ? '#F5EFE9' : '#FAFAF8',
+                        border: `1px solid ${isSelected ? '#E8D5C4' : '#F0EDE8'}`,
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {/* Custom checkbox */}
+                      <div style={{
+                        width: 18, height: 18, borderRadius: 5, flexShrink: 0,
+                        border: `2px solid ${isSelected ? '#AA9682' : '#D0CDC5'}`,
+                        background: isSelected ? '#AA9682' : '#fff',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'all 0.15s',
+                      }}>
+                        {isSelected && (
+                          <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                            <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </div>
+
+                      {/* Avatar */}
+                      <div style={{
+                        width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                        background: isSelected ? '#AA9682' : '#D0CDC5',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 12, fontWeight: 700, color: '#fff',
+                        transition: 'background 0.15s',
+                      }}>
+                        {member.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
+                      </div>
+
+                      {/* Name + email */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 500, color: '#1A1A2E' }}>{member.full_name}</div>
+                        <div style={{ fontSize: 11, color: '#9C998F', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {member.email} · <span style={{ textTransform: 'capitalize' }}>{member.role}</span>
+                        </div>
+                      </div>
+
+                      {isSelected && (
+                        <span style={{ fontSize: 11, color: '#AA9682', fontWeight: 600, flexShrink: 0 }}>
+                          Will receive ✓
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {selectedRecipientCount > 0 && (
+              <div style={{
+                marginTop: 14, padding: '10px 14px',
+                background: '#F5EFE9', borderRadius: 8, border: '1px solid #E8D5C4',
+                fontSize: 12, color: '#8A6A50', lineHeight: 1.5,
+              }}>
+                📧 <strong>{selectedRecipientCount} user{selectedRecipientCount > 1 ? 's' : ''}</strong> will automatically receive this email on every stage change to <strong>{selected}</strong>.
+              </div>
+            )}
           </div>
 
           {/* Content toggles */}

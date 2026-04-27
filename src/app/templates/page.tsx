@@ -13,11 +13,14 @@ export default async function TemplatesPage() {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') redirect('/dashboard')
 
-  const { data: templates } = await supabase.from('email_templates').select('*')
+  const [{ data: templates }, { data: team }] = await Promise.all([
+    supabase.from('email_templates').select('*'),
+    supabase.from('profiles').select('id, full_name, email, role').eq('is_active', true).order('full_name'),
+  ])
 
   return (
     <AppShell>
-      <TemplatesView initialTemplates={templates ?? []} />
+      <TemplatesView initialTemplates={templates ?? []} team={team ?? []} />
     </AppShell>
   )
 }
