@@ -6,6 +6,7 @@ import { useLanguage } from '@/lib/language-context'
 import type { LicRecord, Comment, ActivityLog, Attachment, Profile, PermKey } from '@/lib/types'
 import { STAGE_META, BRAND_COLORS, PRIORITY_COLORS, STAGES, PRIORITIES } from '@/lib/constants'
 import { fmtDate, fmtFileSize } from '@/lib/utils'
+import type { Translations } from '@/lib/language-context'
 import StageBadge from '@/components/ui/StageBadge'
 import Avatar from '@/components/ui/Avatar'
 import PriorityDot from '@/components/ui/PriorityDot'
@@ -291,7 +292,7 @@ interface DetailsTabProps {
   settingCover: string | null
   uploading: boolean
   can: (key: PermKey) => boolean
-  t: import('@/lib/language-context').Translations
+  t: Translations
 }
 
 function DetailsTab({ record, attachments, onStageChange, onPriorityChange, onUpload, onDeleteAttachment, onSetCover, settingCover, uploading, can, t }: DetailsTabProps) {
@@ -454,7 +455,7 @@ interface CommentsTabProps {
   onPost: () => void
   posting: boolean
   can: (key: PermKey) => boolean
-  t: import('@/lib/language-context').Translations
+  t: Translations
 }
 
 function CommentsTab({ comments, newComment, setNewComment, onPost, posting, can, t }: CommentsTabProps) {
