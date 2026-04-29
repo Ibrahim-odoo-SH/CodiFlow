@@ -2,6 +2,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/lib/auth-context'
+import { useLanguage } from '@/lib/language-context'
 import type { LicRecord, Profile, Filters } from '@/lib/types'
 import { STAGE_META, BRAND_COLORS, PRIORITY_COLORS } from '@/lib/constants'
 import { daysSince } from '@/lib/utils'
@@ -46,6 +47,7 @@ function applyFilters(records: LicRecord[], f: Filters): LicRecord[] {
 
 export default function TableView({ initialRecords, team, initialFilters }: Props) {
   const { profile, can } = useAuth()
+  const { t } = useLanguage()
   const supabase = createClient()
   const [records, setRecords] = useState<LicRecord[]>(initialRecords)
   const [filters, setFilters] = useState<Filters>({ ...DEFAULT_FILTERS, ...initialFilters })
@@ -180,19 +182,19 @@ export default function TableView({ initialRecords, team, initialFilters }: Prop
         <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff' }}>
           <thead style={{ position: 'sticky', top: 0, background: '#FAFAF8', zIndex: 1 }}>
             <tr>
-              <th style={{ ...thStyle, width: 52 }}>IMG</th>
-              <th style={thStyle}>Ref</th>
-              <th style={thStyle}>Licensor Ref</th>
-              <th style={thStyle}>Product</th>
-              <th style={thStyle}>Brand</th>
-              <th style={thStyle}>Stage</th>
-              <th style={thStyle}>Owner</th>
-              <th style={thStyle}>Priority</th>
-              <th style={thStyle}>Waiting On</th>
-              <th style={thStyle}>Next Action</th>
-              <th style={thStyle}>Samples</th>
-              <th style={thStyle}>🔔 Reminder</th>
-              {can('sendEmail') && <th style={thStyle}>Notify</th>}
+              <th style={{ ...thStyle, width: 52 }}>{t.table_img}</th>
+              <th style={thStyle}>{t.table_ref}</th>
+              <th style={thStyle}>{t.drawer_licensorRef}</th>
+              <th style={thStyle}>{t.table_product}</th>
+              <th style={thStyle}>{t.table_brand}</th>
+              <th style={thStyle}>{t.table_stage}</th>
+              <th style={thStyle}>{t.table_owner}</th>
+              <th style={thStyle}>{t.table_priority}</th>
+              <th style={thStyle}>{t.table_waiting}</th>
+              <th style={thStyle}>{t.table_nextAction}</th>
+              <th style={thStyle}>{t.table_samples}</th>
+              <th style={thStyle}>🔔 {t.table_reminder}</th>
+              {can('sendEmail') && <th style={thStyle}>{t.drawer_notify}</th>}
             </tr>
           </thead>
           <tbody>

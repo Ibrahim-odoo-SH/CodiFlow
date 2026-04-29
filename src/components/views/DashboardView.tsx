@@ -2,6 +2,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useLanguage } from '@/lib/language-context'
 import type { LicRecord, ActivityLog } from '@/lib/types'
 import { daysSince, fmtDate } from '@/lib/utils'
 import { STAGE_META, PRIORITY_COLORS, BRAND_COLORS } from '@/lib/constants'
@@ -22,13 +23,14 @@ const PIPELINE_STAGES = [
   'Production Samples', 'Production Samples Shipped', 'Fully Approved',
 ]
 
-function ReminderCard({ record, accent, bg, border, onDone, onNavigate }: {
+function ReminderCard({ record, accent, bg, border, onDone, onNavigate, markDoneLabel }: {
   record: LicRecord
   accent: string
   bg: string
   border: string
   onDone: (id: string) => void
   onNavigate: () => void
+  markDoneLabel: string
 }) {
   const sm = STAGE_META[record.normalized_stage]
   return (
@@ -75,7 +77,7 @@ function ReminderCard({ record, accent, bg, border, onDone, onNavigate }: {
             borderRadius: 6, padding: '3px 10px', cursor: 'pointer',
           }}
         >
-          ✓ Mark Done
+          ✓ {markDoneLabel}
         </button>
       </div>
     </div>
@@ -97,6 +99,7 @@ function sectionTitle(title: string) {
 export default function DashboardView({ records: initialRecords, logs }: Props) {
   const router = useRouter()
   const supabase = createClient()
+  const { t } = useLanguage()
   const [records, setRecords] = useState<LicRecord[]>(initialRecords)
 
   const active   = records.filter((r) => !r.is_archived)
@@ -186,7 +189,7 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
 
   const kpiCards = [
     {
-      label: 'Active Records', value: stats.total,
+      label: t.dash_activeRecords, value: stats.total,
       sub: `${archived.length} archived`,
       color: '#2D4A6F', bg: '#F0F4FA', nav: '/table',
     },
@@ -196,12 +199,12 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
       color: '#D43C3C', bg: '#FFF0F0', nav: '/table',
     },
     {
-      label: 'Reminders Due', value: remindersOverdue.length + remindersToday.length,
-      sub: remindersUpcoming.length > 0 ? `${remindersUpcoming.length} upcoming this week` : 'No upcoming reminders',
+      label: t.dash_remindersDue, value: remindersOverdue.length + remindersToday.length,
+      sub: remindersUpcoming.length > 0 ? `${remindersUpcoming.length} ${t.dash_upcomingWeek}` : t.dash_noUpcoming,
       color: '#8D6E00', bg: '#FFF8E1', nav: '/dashboard',
     },
     {
-      label: 'Fully Approved', value: stats.approved,
+      label: t.dash_fullyApproved, value: stats.approved,
       sub: `${stats.withSamples} with samples`,
       color: '#1A7A3A', bg: '#EEFBF0', nav: '/approved',
     },
@@ -405,13 +408,13 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
             <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E', margin: 0 }}>🔔 Follow-up Reminders</h3>
             <span style={{ background: '#FFF8E1', color: '#8D6E00', border: '1px solid #FFE082', borderRadius: 20, padding: '1px 9px', fontSize: 11, fontWeight: 700 }}>
-              {allReminders.length} pending
+              {allReminders.length} {t.dash_pending}
             </span>
             <button
               onClick={() => router.push('/table?reminders=1')}
               style={{ marginLeft: 'auto', fontSize: 12, color: '#2D4A6F', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 500 }}
             >
-              View all →
+              {t.dash_viewAll}
             </button>
           </div>
 
@@ -421,11 +424,11 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
             {remindersOverdue.length > 0 && (
               <div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#C0392B', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>
-                  🔴 Overdue — {remindersOverdue.length}
+                  {t.dash_overdue} — {remindersOverdue.length}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 8 }}>
                   {remindersOverdue.map((r) => (
-                    <ReminderCard key={r.id} record={r} accent="#C0392B" bg="#FFF0F0" border="#FFB8B8" onDone={markDone} onNavigate={() => router.push('/table?reminders=1')} />
+                    <ReminderCard key={r.id} record={r} accent="#C0392B" bg="#FFF0F0" border="#FFB8B8" onDone={markDone} onNavigate={() => router.push('/table?reminders=1')} markDoneLabel={t.dash_markDone} />
                   ))}
                 </div>
               </div>
@@ -435,11 +438,11 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
             {remindersToday.length > 0 && (
               <div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#B87A2B', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>
-                  🟡 Due Today — {remindersToday.length}
+                  {t.dash_dueToday} — {remindersToday.length}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 8 }}>
                   {remindersToday.map((r) => (
-                    <ReminderCard key={r.id} record={r} accent="#B87A2B" bg="#FFFBF0" border="#FFE082" onDone={markDone} onNavigate={() => router.push('/table?reminders=1')} />
+                    <ReminderCard key={r.id} record={r} accent="#B87A2B" bg="#FFFBF0" border="#FFE082" onDone={markDone} onNavigate={() => router.push('/table?reminders=1')} markDoneLabel={t.dash_markDone} />
                   ))}
                 </div>
               </div>
@@ -449,11 +452,11 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
             {remindersUpcoming.length > 0 && (
               <div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#2B6CB0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>
-                  🔵 Upcoming (next 7 days) — {remindersUpcoming.length}
+                  {t.dash_upcoming} — {remindersUpcoming.length}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 8 }}>
                   {remindersUpcoming.map((r) => (
-                    <ReminderCard key={r.id} record={r} accent="#2B6CB0" bg="#EBF7FF" border="#A8D8FF" onDone={markDone} onNavigate={() => router.push('/table?reminders=1')} />
+                    <ReminderCard key={r.id} record={r} accent="#2B6CB0" bg="#EBF7FF" border="#A8D8FF" onDone={markDone} onNavigate={() => router.push('/table?reminders=1')} markDoneLabel={t.dash_markDone} />
                   ))}
                 </div>
               </div>

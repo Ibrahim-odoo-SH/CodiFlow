@@ -1,21 +1,9 @@
 'use client'
 import { useState, useEffect } from 'react'
-
-interface SettingRow {
-  label: string
-  hint: string
-  key: string
-}
-
-const SETTINGS: SettingRow[] = [
-  {
-    key: 'reminder_emails_enabled',
-    label: 'Daily Reminder Emails',
-    hint: 'Send automatic email reminders to record owners at 9:00 AM every day for due or overdue reminders.',
-  },
-]
+import { useLanguage } from '@/lib/language-context'
 
 export default function SettingsView() {
+  const { t } = useLanguage()
   const [values, setValues]   = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving]   = useState(false)
@@ -70,10 +58,10 @@ export default function SettingsView() {
       {/* Page header */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ fontSize: 22, fontWeight: 700, color: '#1A1A2E', marginBottom: 4 }}>
-          System Settings
+          {t.settings_title}
         </div>
         <div style={{ fontSize: 13, color: '#9C998F' }}>
-          Admin-only controls for automated features.
+          {t.settings_subtitle}
         </div>
       </div>
 
@@ -88,48 +76,37 @@ export default function SettingsView() {
           display: 'flex', alignItems: 'center', gap: 10,
         }}>
           <span style={{ fontSize: 16 }}>📧</span>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>Email Automation</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{t.settings_emailAuto}</div>
         </div>
 
         {/* Rows */}
         <div style={{ padding: '8px 0' }}>
           {loading ? (
-            <div style={{ padding: '24px 20px', color: '#9C998F', fontSize: 13 }}>Loading…</div>
+            <div style={{ padding: '24px 20px', color: '#9C998F', fontSize: 13 }}>{t.settings_loading}</div>
           ) : (
-            SETTINGS.map((s, i) => {
-              const val = values[s.key] ?? false
+            (() => {
+              const key = 'reminder_emails_enabled'
+              const val = values[key] ?? false
               return (
-                <div
-                  key={s.key}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 16,
-                    padding: '16px 20px',
-                    borderBottom: i < SETTINGS.length - 1 ? '1px solid #F0EDE8' : 'none',
-                  }}
-                >
-                  {/* Text */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 14, fontWeight: 500, color: '#1A1A2E', marginBottom: 3 }}>
-                      {s.label}
+                      {t.settings_reminderLabel}
                     </div>
                     <div style={{ fontSize: 12, color: '#9C998F', lineHeight: 1.6 }}>
-                      {s.hint}
+                      {t.settings_reminderHint}
                     </div>
                   </div>
-
-                  {/* Status label */}
                   <span style={{
                     fontSize: 11, fontWeight: 700,
                     color: val ? '#2D4A6F' : '#9C998F',
                     background: val ? '#EEF2FA' : '#F4F3EF',
                     borderRadius: 20, padding: '3px 10px', flexShrink: 0,
                   }}>
-                    {val ? 'On' : 'Off'}
+                    {val ? t.settings_on : t.settings_off}
                   </span>
-
-                  {/* Toggle */}
                   <div
-                    onClick={() => toggle(s.key)}
+                    onClick={() => toggle(key)}
                     style={{
                       width: 44, height: 24, borderRadius: 12, flexShrink: 0,
                       background: val ? '#2D4A6F' : '#D0CDC5',
@@ -140,13 +117,12 @@ export default function SettingsView() {
                     <div style={{
                       position: 'absolute', top: 4, left: val ? 22 : 4,
                       width: 16, height: 16, borderRadius: '50%', background: '#fff',
-                      transition: 'left 0.2s',
-                      boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+                      transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
                     }} />
                   </div>
                 </div>
               )
-            })
+            })()
           )}
         </div>
       </div>
@@ -157,9 +133,7 @@ export default function SettingsView() {
         borderRadius: 10, padding: '14px 16px', marginBottom: 24,
         fontSize: 12, color: '#7A5A3A', lineHeight: 1.7,
       }}>
-        <strong>How it works:</strong> Every day at <strong>9:00 AM</strong>, CodiFlow checks for records
-        with a reminder date that is today or overdue. Each record owner receives an individual
-        email listing the reminder. Turn this off to stop all automated reminder emails.
+        <strong>{t.settings_howTitle}</strong> {t.settings_howText}
       </div>
 
       {/* Error */}
@@ -186,7 +160,7 @@ export default function SettingsView() {
           transition: 'background 0.2s',
         }}
       >
-        {saving ? 'Saving…' : saved ? '✓ Saved!' : 'Save Settings'}
+        {saving ? t.settings_saving : saved ? t.settings_saved : t.settings_save}
       </button>
     </div>
   )

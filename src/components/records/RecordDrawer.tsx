@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/lib/auth-context'
+import { useLanguage } from '@/lib/language-context'
 import type { LicRecord, Comment, ActivityLog, Attachment, Profile, PermKey } from '@/lib/types'
 import { STAGE_META, BRAND_COLORS, PRIORITY_COLORS, STAGES, PRIORITIES } from '@/lib/constants'
 import { fmtDate, fmtFileSize } from '@/lib/utils'
@@ -23,6 +24,7 @@ const ACCEPTED = '.jpg,.jpeg,.png,.gif,.webp,.pdf,.svg,.ai,.psd,.eps'
 
 export default function RecordDrawer({ record, team, onClose, onUpdate, onDelete }: DrawerProps) {
   const { profile, can } = useAuth()
+  const { t } = useLanguage()
   const supabase = createClient()
   const [tab, setTab] = useState<'details' | 'comments' | 'history'>('details')
   const [editing, setEditing] = useState(false)
@@ -113,7 +115,7 @@ export default function RecordDrawer({ record, team, onClose, onUpdate, onDelete
   }
 
   async function handleDelete() {
-    if (!confirm('Delete this record? This cannot be undone.')) return
+    if (!confirm(t.drawer_deleteConfirm)) return
     await supabase.from('records').delete().eq('id', record.id)
     onDelete?.(record.id)
     onClose()
@@ -213,14 +215,14 @@ export default function RecordDrawer({ record, team, onClose, onUpdate, onDelete
             </div>
             <div style={{ display: 'flex', gap: 6, flexShrink: 0, marginLeft: 10 }}>
               {can('editRecords') && !editing && (
-                <button onClick={() => setEditing(true)} style={{ padding: '5px 10px', background: '#F4F3EF', border: '1px solid #E5E2DA', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>✏️ Edit</button>
+                <button onClick={() => setEditing(true)} style={{ padding: '5px 10px', background: '#F4F3EF', border: '1px solid #E5E2DA', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>{t.drawer_edit}</button>
               )}
               {can('sendEmail') && (
-                <button onClick={() => setShowNotify(true)} style={{ padding: '5px 10px', background: '#F4F3EF', border: '1px solid #E5E2DA', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>✉ Notify</button>
+                <button onClick={() => setShowNotify(true)} style={{ padding: '5px 10px', background: '#F4F3EF', border: '1px solid #E5E2DA', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>{t.drawer_notify}</button>
               )}
               {can('archive') && (
                 <button onClick={handleArchive} style={{ padding: '5px 10px', background: '#F4F3EF', border: '1px solid #E5E2DA', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>
-                  {record.is_archived ? '📤 Restore' : '📁 Archive'}
+                  {record.is_archived ? t.drawer_restore : t.drawer_archive}
                 </button>
               )}
               {can('deleteRecords') && (
@@ -234,15 +236,15 @@ export default function RecordDrawer({ record, team, onClose, onUpdate, onDelete
         {/* Tabs */}
         {!editing && (
           <div style={{ display: 'flex', borderBottom: '1px solid #E5E2DA', padding: '0 18px' }}>
-            {(['details', 'comments', 'history'] as const).map((t) => (
-              <button key={t} onClick={() => setTab(t)} style={{
+            {(['details', 'comments', 'history'] as const).map((tab_) => (
+              <button key={tab_} onClick={() => setTab(tab_)} style={{
                 padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer',
-                fontWeight: tab === t ? 600 : 400, fontSize: 13,
-                color: tab === t ? '#2D4A6F' : '#9C998F',
-                borderBottom: tab === t ? '2px solid #2D4A6F' : '2px solid transparent',
+                fontWeight: tab === tab_ ? 600 : 400, fontSize: 13,
+                color: tab === tab_ ? '#2D4A6F' : '#9C998F',
+                borderBottom: tab === tab_ ? '2px solid #2D4A6F' : '2px solid transparent',
                 marginBottom: -1,
               }}>
-                {t === 'details' ? 'Details' : t === 'comments' ? `Comments (${comments.length})` : 'History'}
+                {tab_ === 'details' ? t.drawer_details : tab_ === 'comments' ? `${t.drawer_comments} (${comments.length})` : t.drawer_history}
               </button>
             ))}
           </div>
@@ -262,11 +264,11 @@ export default function RecordDrawer({ record, team, onClose, onUpdate, onDelete
               uploading={uploading}
             />
           ) : tab === 'details' ? (
-            <DetailsTab record={record} attachments={attachments} onStageChange={handleStageChange} onPriorityChange={handlePriorityChange} onUpload={handleUpload} onDeleteAttachment={deleteAttachment} onSetCover={setCoverImage} settingCover={settingCover} uploading={uploading} can={can} />
+            <DetailsTab record={record} attachments={attachments} onStageChange={handleStageChange} onPriorityChange={handlePriorityChange} onUpload={handleUpload} onDeleteAttachment={deleteAttachment} onSetCover={setCoverImage} settingCover={settingCover} uploading={uploading} can={can} t={t} />
           ) : tab === 'comments' ? (
-            <CommentsTab comments={comments} newComment={newComment} setNewComment={setNewComment} onPost={postComment} posting={postingComment} can={can} />
+            <CommentsTab comments={comments} newComment={newComment} setNewComment={setNewComment} onPost={postComment} posting={postingComment} can={can} t={t} />
           ) : (
-            <HistoryTab logs={logs} />
+            <HistoryTab logs={logs} noHistoryLabel={t.drawer_noHistory} />
           )}
         </div>
       </div>
@@ -289,9 +291,10 @@ interface DetailsTabProps {
   settingCover: string | null
   uploading: boolean
   can: (key: PermKey) => boolean
+  t: import('@/lib/language-context').Translations
 }
 
-function DetailsTab({ record, attachments, onStageChange, onPriorityChange, onUpload, onDeleteAttachment, onSetCover, settingCover, uploading, can }: DetailsTabProps) {
+function DetailsTab({ record, attachments, onStageChange, onPriorityChange, onUpload, onDeleteAttachment, onSetCover, settingCover, uploading, can, t }: DetailsTabProps) {
   const kv = (label: string, val: React.ReactNode) => val ? (
     <div style={{ display: 'flex', gap: 8, padding: '7px 0', borderBottom: '1px solid #F0EDE8' }}>
       <span style={{ minWidth: 140, fontSize: 12, color: '#9C998F', flexShrink: 0 }}>{label}</span>
@@ -305,7 +308,7 @@ function DetailsTab({ record, attachments, onStageChange, onPriorityChange, onUp
       {can('changeStage') && (
         <div style={{ marginBottom: 14, display: 'flex', gap: 8 }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#9C998F', marginBottom: 4 }}>MOVE STAGE</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: '#9C998F', marginBottom: 4 }}>{t.drawer_moveStage}</div>
             <select value={record.normalized_stage} onChange={(e) => onStageChange(e.target.value)}
               style={{ width: '100%', padding: '7px 10px', border: '1px solid #E5E2DA', borderRadius: 7, fontSize: 13, background: '#FAFAF8', cursor: 'pointer' }}>
               {STAGES.map((s) => <option key={s}>{s}</option>)}
@@ -313,7 +316,7 @@ function DetailsTab({ record, attachments, onStageChange, onPriorityChange, onUp
           </div>
           {(can('editPriority') || can('editRecords')) && (
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: '#9C998F', marginBottom: 4 }}>PRIORITY</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#9C998F', marginBottom: 4 }}>{t.drawer_priority}</div>
               <select value={record.priority} onChange={(e) => onPriorityChange(e.target.value)}
                 style={{ width: '100%', padding: '7px 10px', border: '1px solid #E5E2DA', borderRadius: 7, fontSize: 13, background: '#FAFAF8', cursor: 'pointer' }}>
                 {PRIORITIES.map((p) => <option key={p}>{p}</option>)}
@@ -328,7 +331,7 @@ function DetailsTab({ record, attachments, onStageChange, onPriorityChange, onUp
         <div style={{ background: '#FFFBF0', border: '1px solid #FFE082', borderRadius: 8, padding: 12, marginBottom: 14 }}>
           {record.waiting_on !== 'None' && (
             <div style={{ fontSize: 12, marginBottom: 4 }}>
-              <span style={{ color: '#9C998F' }}>Waiting on: </span>
+              <span style={{ color: '#9C998F' }}>{t.drawer_waitingOn} </span>
               <span style={{ fontWeight: 600, color: '#B87A2B' }}>{record.waiting_on}</span>
             </div>
           )}
@@ -340,34 +343,34 @@ function DetailsTab({ record, attachments, onStageChange, onPriorityChange, onUp
 
       {/* Fields */}
       <div>
-        {kv('Brand', record.brand)}
-        {kv('Property', record.property)}
-        {kv('Product Type', record.product_type)}
-        {kv('Gender', record.gender)}
-        {kv('Owner', record.owner_name_snapshot)}
-        {kv('Contact', record.contact_name)}
-        {kv('Licensor Ref', record.main_licensor_ref ? <span style={{ fontFamily: 'monospace', color: '#4B52B8' }}>{record.main_licensor_ref}</span> : null)}
-        {kv('Samples', record.samples_requested_qty > 0 ? `${record.samples_requested_qty} pcs` : null)}
-        {kv('Submission', fmtDate(record.submission_date))}
-        {kv('Concept Approval', fmtDate(record.concept_approval_date))}
-        {kv('PPS Photos', fmtDate(record.pps_photos_date))}
-        {kv('PPS Approval', fmtDate(record.pps_approval_date))}
-        {kv('Sample Sent', fmtDate(record.sample_sent_date))}
-        {kv('Sample Approval', fmtDate(record.sample_approval_date))}
-        {record.tech_pack_link && kv('Tech Pack', <a href={record.tech_pack_link} target="_blank" rel="noopener noreferrer" style={{ color: '#2D4A6F' }}>Open ↗</a>)}
-        {record.additional_link && kv('Additional Link', <a href={record.additional_link} target="_blank" rel="noopener noreferrer" style={{ color: '#2D4A6F' }}>Open ↗</a>)}
+        {kv(t.drawer_brand, record.brand)}
+        {kv(t.drawer_property, record.property)}
+        {kv(t.drawer_productType, record.product_type)}
+        {kv(t.drawer_gender, record.gender)}
+        {kv(t.drawer_owner, record.owner_name_snapshot)}
+        {kv(t.drawer_contact, record.contact_name)}
+        {kv(t.drawer_licensorRef, record.main_licensor_ref ? <span style={{ fontFamily: 'monospace', color: '#4B52B8' }}>{record.main_licensor_ref}</span> : null)}
+        {kv(t.drawer_samples, record.samples_requested_qty > 0 ? `${record.samples_requested_qty} pcs` : null)}
+        {kv(t.drawer_submission, fmtDate(record.submission_date))}
+        {kv(t.drawer_conceptApproval, fmtDate(record.concept_approval_date))}
+        {kv(t.drawer_ppsPhotos, fmtDate(record.pps_photos_date))}
+        {kv(t.drawer_ppsApproval, fmtDate(record.pps_approval_date))}
+        {kv(t.drawer_sampleSent, fmtDate(record.sample_sent_date))}
+        {kv(t.drawer_sampleApproval, fmtDate(record.sample_approval_date))}
+        {record.tech_pack_link && kv(t.drawer_techPack, <a href={record.tech_pack_link} target="_blank" rel="noopener noreferrer" style={{ color: '#2D4A6F' }}>{t.drawer_open}</a>)}
+        {record.additional_link && kv(t.drawer_additionalLink, <a href={record.additional_link} target="_blank" rel="noopener noreferrer" style={{ color: '#2D4A6F' }}>{t.drawer_open}</a>)}
       </div>
 
       {record.notes_summary && (
         <div style={{ marginTop: 14, background: '#F4F3EF', borderRadius: 8, padding: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#9C998F', marginBottom: 6 }}>NOTES</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#9C998F', marginBottom: 6 }}>{t.drawer_notes}</div>
           <p style={{ fontSize: 13, color: '#3A3A4A', lineHeight: 1.6 }}>{record.notes_summary}</p>
         </div>
       )}
 
       {record.licensor_feedback && (
         <div style={{ marginTop: 10, background: '#FFF5EB', border: '1px solid #FFD9A8', borderRadius: 8, padding: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#B87A2B', marginBottom: 6 }}>LICENSOR FEEDBACK</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#B87A2B', marginBottom: 6 }}>{t.drawer_feedback}</div>
           <p style={{ fontSize: 13, color: '#5A4020', lineHeight: 1.6 }}>{record.licensor_feedback}</p>
         </div>
       )}
@@ -375,10 +378,10 @@ function DetailsTab({ record, attachments, onStageChange, onPriorityChange, onUp
       {/* Attachments */}
       <div style={{ marginTop: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#9C998F' }}>ATTACHMENTS ({attachments.length})</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#9C998F' }}>{t.drawer_attachments} ({attachments.length})</div>
           {can('editRecords') && (
             <label style={{ fontSize: 12, color: '#2D4A6F', cursor: 'pointer', fontWeight: 600 }}>
-              {uploading ? 'Uploading…' : '+ Upload'}
+              {uploading ? t.drawer_uploading : t.drawer_upload}
               <input type="file" accept={ACCEPTED} onChange={onUpload} style={{ display: 'none' }} />
             </label>
           )}
@@ -401,7 +404,7 @@ function DetailsTab({ record, attachments, onStageChange, onPriorityChange, onUp
                       />
                     </a>
                     {att.is_primary && (
-                      <span style={{ position: 'absolute', bottom: 4, left: 4, background: '#AA9682', color: '#fff', fontSize: 9, fontWeight: 700, borderRadius: 4, padding: '1px 5px', letterSpacing: '0.05em' }}>COVER</span>
+                      <span style={{ position: 'absolute', bottom: 4, left: 4, background: '#AA9682', color: '#fff', fontSize: 9, fontWeight: 700, borderRadius: 4, padding: '1px 5px', letterSpacing: '0.05em' }}>{t.drawer_cover}</span>
                     )}
                   </div>
                 ) : (
@@ -423,7 +426,7 @@ function DetailsTab({ record, attachments, onStageChange, onPriorityChange, onUp
                         title="Set as table thumbnail"
                         style={{ padding: '2px 6px', background: '#F5EFE9', border: '1px solid #D8C8B8', borderRadius: 4, fontSize: 9, fontWeight: 600, cursor: 'pointer', color: '#AA9682', whiteSpace: 'nowrap' }}
                       >
-                        {settingCover === att.id ? '…' : '⭐ Cover'}
+                        {settingCover === att.id ? '…' : t.drawer_setCover}
                       </button>
                     )}
                     <button
@@ -451,9 +454,10 @@ interface CommentsTabProps {
   onPost: () => void
   posting: boolean
   can: (key: PermKey) => boolean
+  t: import('@/lib/language-context').Translations
 }
 
-function CommentsTab({ comments, newComment, setNewComment, onPost, posting, can }: CommentsTabProps) {
+function CommentsTab({ comments, newComment, setNewComment, onPost, posting, can, t }: CommentsTabProps) {
   return (
     <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
       {can('addComments') && (
@@ -461,16 +465,16 @@ function CommentsTab({ comments, newComment, setNewComment, onPost, posting, can
           <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Add a comment…"
+            placeholder={t.drawer_addComment}
             style={{ flex: 1, padding: '8px 10px', border: '1px solid #E5E2DA', borderRadius: 8, fontSize: 13, resize: 'none', minHeight: 72, outline: 'none' }}
           />
           <button onClick={onPost} disabled={posting || !newComment.trim()}
             style={{ padding: '8px 14px', background: '#2D4A6F', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13, alignSelf: 'flex-end' }}>
-            Post
+            {t.drawer_post}
           </button>
         </div>
       )}
-      {comments.length === 0 && <p style={{ color: '#9C998F', fontSize: 13, textAlign: 'center', padding: 20 }}>No comments yet.</p>}
+      {comments.length === 0 && <p style={{ color: '#9C998F', fontSize: 13, textAlign: 'center', padding: 20 }}>{t.drawer_noComments}</p>}
       {comments.map((c: Comment) => (
         <div key={c.id} style={{ background: '#F4F3EF', borderRadius: 8, padding: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -484,14 +488,14 @@ function CommentsTab({ comments, newComment, setNewComment, onPost, posting, can
   )
 }
 
-function HistoryTab({ logs }: { logs: ActivityLog[] }) {
+function HistoryTab({ logs, noHistoryLabel }: { logs: ActivityLog[]; noHistoryLabel: string }) {
   const icon: Record<string, string> = {
     record_created: '🆕', updated: '✏️', stage_changed: '➡️',
     priority_changed: '🎯', comment: '💬', archive_toggled: '📁',
   }
   return (
     <div style={{ padding: 18 }}>
-      {logs.length === 0 && <p style={{ color: '#9C998F', fontSize: 13, textAlign: 'center', padding: 20 }}>No history yet.</p>}
+      {logs.length === 0 && <p style={{ color: '#9C998F', fontSize: 13, textAlign: 'center', padding: 20 }}>{noHistoryLabel}</p>}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {logs.map((l) => (
           <div key={l.id} style={{ display: 'flex', gap: 10, padding: '8px 0', borderBottom: '1px solid #F0EDE8' }}>

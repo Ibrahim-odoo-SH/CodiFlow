@@ -1,20 +1,14 @@
 'use client'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
+import { useLanguage } from '@/lib/language-context'
 import Avatar from '@/components/ui/Avatar'
-
-const NAV = [
-  { href: '/dashboard', label: 'Dashboard',  abbr: 'DB' },
-  { href: '/board',     label: 'Board',      abbr: 'BO' },
-  { href: '/table',     label: 'Table',      abbr: 'TB' },
-  { href: '/approved',  label: 'Approved',   abbr: 'AP' },
-  { href: '/samples',   label: 'Samples',    abbr: 'SP' },
-]
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const { profile, can, signOut } = useAuth()
+  const { lang, setLang, t } = useLanguage()
 
   async function handleSignOut() {
     await signOut()
@@ -22,15 +16,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   const teamHref  = profile?.role === 'admin' ? '/team'      : '/profile'
-  const teamLabel = profile?.role === 'admin' ? 'Team'       : 'Profile'
+  const teamLabel = profile?.role === 'admin' ? t.nav_team   : t.nav_profile
   const extraNav  = profile?.role === 'admin'
     ? [
-        { href: '/templates', label: 'Templates', abbr: 'TM' },
-        { href: '/settings',  label: 'Settings',  abbr: 'ST' },
+        { href: '/templates', label: t.nav_templates },
+        { href: '/settings',  label: t.nav_settings  },
       ]
     : []
 
-  const allNav = [...NAV, { href: teamHref, label: teamLabel, abbr: '⌂' }, ...extraNav]
+  const NAV = [
+    { href: '/dashboard', label: t.nav_dashboard },
+    { href: '/board',     label: t.nav_board     },
+    { href: '/table',     label: t.nav_table     },
+    { href: '/approved',  label: t.nav_approved  },
+    { href: '/samples',   label: t.nav_samples   },
+  ]
+
+  const allNav = [...NAV, { href: teamHref, label: teamLabel }, ...extraNav]
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
@@ -116,7 +118,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 e.currentTarget.style.transform = 'translateY(0)'
               }}
             >
-              + New Record
+              {t.nav_newRecord}
             </button>
           </div>
         )}
@@ -130,7 +132,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           textTransform: 'uppercase',
           fontWeight: 500,
         }}>
-          Navigate
+          {t.nav_navigate}
         </div>
 
         {/* Nav links */}
@@ -191,6 +193,38 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
+        {/* Language toggle */}
+        <div style={{
+          padding: '8px 14px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 4,
+        }}>
+          {(['en', 'fr'] as const).map((l) => (
+            <button
+              key={l}
+              onClick={() => setLang(l)}
+              style={{
+                flex: 1,
+                padding: '5px 0',
+                fontSize: 11,
+                fontWeight: lang === l ? 700 : 400,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                border: lang === l ? '1px solid rgba(170,150,130,0.5)' : '1px solid rgba(255,255,255,0.06)',
+                borderRadius: 6,
+                background: lang === l ? 'rgba(170,150,130,0.14)' : 'transparent',
+                color: lang === l ? '#AA9682' : 'rgba(255,255,255,0.3)',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+            >
+              {l === 'en' ? '🇬🇧 EN' : '🇫🇷 FR'}
+            </button>
+          ))}
+        </div>
+
         {/* User section */}
         {profile && (
           <div style={{
@@ -242,7 +276,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
               }}
             >
-              Out
+              {t.nav_signOut}
             </button>
           </div>
         )}
