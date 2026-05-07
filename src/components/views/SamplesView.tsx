@@ -3,13 +3,15 @@ import { useState } from 'react'
 import type { LicRecord, Profile } from '@/lib/types'
 import { STAGE_META, BRAND_COLORS } from '@/lib/constants'
 import { useLanguage } from '@/lib/language-context'
+import { useIsMobile } from '@/lib/use-mobile'
 import RecordDrawer from '@/components/records/RecordDrawer'
 import Avatar from '@/components/ui/Avatar'
 
 interface Props { initialRecords: LicRecord[]; team: Profile[] }
 
 export default function SamplesView({ initialRecords, team }: Props) {
-  const { t } = useLanguage()
+  const { t, stageLabel } = useLanguage()
+  const isMobile = useIsMobile()
   const [records, setRecords] = useState(initialRecords)
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<LicRecord | null>(null)
@@ -40,7 +42,7 @@ export default function SamplesView({ initialRecords, team }: Props) {
       </div>
 
       <div style={{ flex: 1, overflow: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff' }}>
+        <table style={{ width: isMobile ? 'max-content' : '100%', minWidth: '100%', borderCollapse: 'collapse', background: '#fff' }}>
           <thead style={{ position: 'sticky', top: 0, background: '#FAFAF8', zIndex: 1 }}>
             <tr>
               <th style={thStyle}>{t.samples_product}</th>
@@ -75,7 +77,7 @@ export default function SamplesView({ initialRecords, team }: Props) {
                   </td>
                   <td style={tdStyle}>
                     <span style={{ background: sm.bg, color: sm.color, border: `1px solid ${sm.border}`, borderRadius: 20, padding: '2px 8px', fontSize: 11, fontWeight: 600 }}>
-                      {sm.icon} {r.normalized_stage}
+                      {sm.icon} {stageLabel(r.normalized_stage)}
                     </span>
                   </td>
                   <td style={tdStyle}>{r.owner_name_snapshot ? <Avatar name={r.owner_name_snapshot} showName size={22} /> : '—'}</td>

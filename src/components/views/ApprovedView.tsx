@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth-context'
 import { BRAND_COLORS } from '@/lib/constants'
 import { fmtDate } from '@/lib/utils'
 import { useLanguage } from '@/lib/language-context'
+import { useIsMobile } from '@/lib/use-mobile'
 import FilterBar from '@/components/records/FilterBar'
 import RecordDrawer from '@/components/records/RecordDrawer'
 import Avatar from '@/components/ui/Avatar'
@@ -16,6 +17,7 @@ const DEFAULT_FILTERS: Filters = { search: '', brand: '', property: '', stage: '
 export default function ApprovedView({ initialRecords, team }: Props) {
   const { profile, can } = useAuth()
   const { t } = useLanguage()
+  const isMobile = useIsMobile()
   const [records, setRecords] = useState(initialRecords)
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [selected, setSelected] = useState<LicRecord | null>(null)
@@ -53,7 +55,7 @@ export default function ApprovedView({ initialRecords, team }: Props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Green header */}
-      <div style={{ background: '#1A7A3A', color: '#fff', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ background: '#1A7A3A', color: '#fff', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
         <div>
           <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>{t.approved_title}</h2>
           <p style={{ fontSize: 13, opacity: 0.8, margin: '2px 0 0' }}>{filtered.length} {t.approved_subtitle}</p>
@@ -68,7 +70,7 @@ export default function ApprovedView({ initialRecords, team }: Props) {
       <FilterBar filters={filters} onChange={setFilters} owners={owners} hideStage />
 
       <div style={{ flex: 1, overflow: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff' }}>
+        <table style={{ width: isMobile ? 'max-content' : '100%', minWidth: '100%', borderCollapse: 'collapse', background: '#fff' }}>
           <thead style={{ position: 'sticky', top: 0, background: '#FAFAF8', zIndex: 1 }}>
             <tr>
               <th style={thStyle}>{t.table_ref}</th>

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useLanguage } from '@/lib/language-context'
 import type { Translations } from '@/lib/language-context'
+import { useIsMobile } from '@/lib/use-mobile'
 import { STAGES, STAGE_META } from '@/lib/constants'
 import type { Stage } from '@/lib/types'
 
@@ -66,6 +67,7 @@ interface Props {
 export default function TemplatesView({ initialTemplates, team: initialTeam }: Props) {
   const supabase = createClient()
   const { t, stageLabel } = useLanguage()
+  const isMobile = useIsMobile()
   const [templates, setTemplates] = useState<Record<string, EmailTemplate>>(
     Object.fromEntries(initialTemplates.map((tmpl) => [tmpl.stage, tmpl]))
   )
@@ -197,67 +199,107 @@ export default function TemplatesView({ initialTemplates, team: initialTeam }: P
   const selectedRecipientCount = (current.auto_recipient_ids ?? []).length
 
   return (
-    <div style={{ display: 'flex', height: 'calc(100vh - 52px)', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', height: isMobile ? 'auto' : 'calc(100vh - 52px)', overflow: isMobile ? 'visible' : 'hidden' }}>
 
-      {/* ── Left sidebar ── */}
-      <div style={{
-        width: 220, background: '#fff', borderRight: '1px solid #E5E2DA',
-        display: 'flex', flexDirection: 'column', flexShrink: 0,
-      }}>
-        <div style={{ padding: '16px 16px 10px', borderBottom: '1px solid #E5E2DA' }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{t.tmpl_title}</div>
-          <div style={{ fontSize: 11, color: '#9C998F', marginTop: 2 }}>{t.tmpl_subtitle}</div>
-        </div>
-        <div style={{ flex: 1, overflow: 'auto', padding: '8px' }}>
-          {editableStages.map((stage) => {
-            const m = STAGE_META[stage as Stage]
-            const hasCustom = !!templates[stage]
-            const recipientCount = (templates[stage]?.auto_recipient_ids ?? []).length
-            const isActive = selected === stage
-            return (
-              <button
-                key={stage}
-                onClick={() => { setSelected(stage); setSaved(false) }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 8, width: '100%',
-                  padding: '8px 10px', borderRadius: 8, border: 'none', textAlign: 'left',
-                  background: isActive ? '#EEF2FA' : 'transparent',
-                  cursor: 'pointer', marginBottom: 2, transition: 'background 0.1s',
-                }}
-                onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = '#F4F3EF' }}
-                onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
-              >
-                <span style={{ fontSize: 14 }}>{m?.icon}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontSize: 12, fontWeight: isActive ? 600 : 400,
-                    color: isActive ? '#2D4A6F' : '#1A1A2E',
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                  }}>
+      {/* ── Mobile: horizontal scrollable stage tabs ── */}
+      {isMobile ? (
+        <div style={{ background: '#fff', borderBottom: '1px solid #E5E2DA', flexShrink: 0 }}>
+          <div style={{ padding: '12px 16px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{t.tmpl_title}</div>
+              <div style={{ fontSize: 11, color: '#9C998F', marginTop: 1 }}>{t.tmpl_subtitle}</div>
+            </div>
+          </div>
+          <div style={{ overflowX: 'auto', display: 'flex', gap: 6, padding: '0 12px 12px', WebkitOverflowScrolling: 'touch' as any }}>
+            {editableStages.map((stage) => {
+              const m = STAGE_META[stage as Stage]
+              const hasCustom = !!templates[stage]
+              const isActive = selected === stage
+              return (
+                <button
+                  key={stage}
+                  onClick={() => { setSelected(stage); setSaved(false) }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
+                    padding: '6px 10px', borderRadius: 20, border: '1px solid',
+                    borderColor: isActive ? '#2D4A6F' : '#E5E2DA',
+                    background: isActive ? '#EEF2FA' : '#fff',
+                    cursor: 'pointer', whiteSpace: 'nowrap', position: 'relative',
+                  }}
+                >
+                  <span style={{ fontSize: 13 }}>{m?.icon}</span>
+                  <span style={{ fontSize: 12, fontWeight: isActive ? 700 : 400, color: isActive ? '#2D4A6F' : '#3A3A4A' }}>
                     {stageLabel(stage)}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
-                  {recipientCount > 0 && (
-                    <span style={{
-                      fontSize: 10, fontWeight: 700, color: '#AA9682',
-                      background: '#F5EFE9', borderRadius: 20, padding: '1px 6px',
-                    }}>
-                      {recipientCount} 👤
-                    </span>
-                  )}
+                  </span>
                   {hasCustom && (
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#2D4A6F' }} />
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#2D4A6F', marginLeft: 2 }} />
                   )}
-                </div>
-              </button>
-            )
-          })}
+                </button>
+              )
+            })}
+          </div>
         </div>
-      </div>
+      ) : (
+        /* ── Desktop: Left sidebar ── */
+        <div style={{
+          width: 220, background: '#fff', borderRight: '1px solid #E5E2DA',
+          display: 'flex', flexDirection: 'column', flexShrink: 0,
+        }}>
+          <div style={{ padding: '16px 16px 10px', borderBottom: '1px solid #E5E2DA' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{t.tmpl_title}</div>
+            <div style={{ fontSize: 11, color: '#9C998F', marginTop: 2 }}>{t.tmpl_subtitle}</div>
+          </div>
+          <div style={{ flex: 1, overflow: 'auto', padding: '8px' }}>
+            {editableStages.map((stage) => {
+              const m = STAGE_META[stage as Stage]
+              const hasCustom = !!templates[stage]
+              const recipientCount = (templates[stage]?.auto_recipient_ids ?? []).length
+              const isActive = selected === stage
+              return (
+                <button
+                  key={stage}
+                  onClick={() => { setSelected(stage); setSaved(false) }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                    padding: '8px 10px', borderRadius: 8, border: 'none', textAlign: 'left',
+                    background: isActive ? '#EEF2FA' : 'transparent',
+                    cursor: 'pointer', marginBottom: 2, transition: 'background 0.1s',
+                  }}
+                  onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = '#F4F3EF' }}
+                  onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+                >
+                  <span style={{ fontSize: 14 }}>{m?.icon}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: 12, fontWeight: isActive ? 600 : 400,
+                      color: isActive ? '#2D4A6F' : '#1A1A2E',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                      {stageLabel(stage)}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
+                    {recipientCount > 0 && (
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, color: '#AA9682',
+                        background: '#F5EFE9', borderRadius: 20, padding: '1px 6px',
+                      }}>
+                        {recipientCount} 👤
+                      </span>
+                    )}
+                    {hasCustom && (
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#2D4A6F' }} />
+                    )}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
-      {/* ── Right panel ── */}
-      <div style={{ flex: 1, overflow: 'auto', background: '#F4F3EF', padding: 28 }}>
+      {/* ── Right / Content panel ── */}
+      <div style={{ flex: 1, overflow: 'auto', background: '#F4F3EF', padding: isMobile ? '16px 14px' : 28 }}>
         <div style={{ maxWidth: 700 }}>
 
           {/* Stage header */}

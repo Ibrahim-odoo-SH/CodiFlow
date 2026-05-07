@@ -1,6 +1,7 @@
 'use client'
 import { BRANDS, PROPS, STAGES, PRIORITIES, WAITING_OPTS } from '@/lib/constants'
 import { useLanguage } from '@/lib/language-context'
+import { useIsMobile } from '@/lib/use-mobile'
 import type { Filters } from '@/lib/types'
 
 interface FilterBarProps {
@@ -22,6 +23,7 @@ const inp: React.CSSProperties = {
 
 export default function FilterBar({ filters, onChange, owners, hideStage, extraActions }: FilterBarProps) {
   const { t, stageLabel } = useLanguage()
+  const isMobile = useIsMobile()
   const set = (key: keyof Filters, val: any) => onChange({ ...filters, [key]: val })
 
   const hasActive = filters.search || filters.brand || filters.property || filters.stage ||
@@ -34,7 +36,7 @@ export default function FilterBar({ filters, onChange, owners, hideStage, extraA
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '10px 20px', background: '#FAFAF8', borderBottom: '1px solid #E5E2DA' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: isMobile ? '10px 12px' : '10px 20px', background: '#FAFAF8', borderBottom: '1px solid #E5E2DA' }}>
       <input
         style={inp} placeholder={t.filter_search}
         value={filters.search}
