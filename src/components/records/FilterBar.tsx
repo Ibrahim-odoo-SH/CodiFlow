@@ -16,7 +16,7 @@ const sel: React.CSSProperties = {
 }
 const inp: React.CSSProperties = {
   padding: '5px 10px', border: '1px solid #E5E2DA', borderRadius: 6,
-  background: '#fff', fontSize: 13, outline: 'none', width: 200,
+  background: '#fff', fontSize: 13, outline: 'none', width: '100%', maxWidth: 220, minWidth: 120,
 }
 
 export default function FilterBar({ filters, onChange, owners, hideStage, extraActions }: FilterBarProps) {

@@ -84,3 +84,24 @@ input, select, textarea, button {
   from { opacity: 0; transform: translateX(-6px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+
+/* ── Mobile ── */
+html {
+  /* Prevent iOS bounce from showing white behind the app */
+  overscroll-behavior: none;
+}
+
+@media (max-width: 768px) {
+  /* Ensure no accidental overflow causes horizontal scroll on the page itself */
+  body { overflow-x: hidden; }
+
+  /* Larger tap targets */
+  button, select, input[type="checkbox"] { min-height: 36px; }
+
+  /* Sheet slide-up for mobile modals */
+  @keyframes sheetUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+  .sheet-enter { animation: sheetUp 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+}

@@ -7,6 +7,7 @@ import type { LicRecord, Comment, ActivityLog, Attachment, Profile, PermKey } fr
 import { STAGE_META, BRAND_COLORS, PRIORITY_COLORS, STAGES, PRIORITIES } from '@/lib/constants'
 import { fmtDate, fmtFileSize } from '@/lib/utils'
 import type { Translations } from '@/lib/language-context'
+import { useIsMobile } from '@/lib/use-mobile'
 import StageBadge from '@/components/ui/StageBadge'
 import Avatar from '@/components/ui/Avatar'
 import PriorityDot from '@/components/ui/PriorityDot'
@@ -26,6 +27,7 @@ const ACCEPTED = '.jpg,.jpeg,.png,.gif,.webp,.pdf,.svg,.ai,.psd,.eps'
 export default function RecordDrawer({ record, team, onClose, onUpdate, onDelete }: DrawerProps) {
   const { profile, can } = useAuth()
   const { t } = useLanguage()
+  const isMobile = useIsMobile()
   const supabase = createClient()
   const [tab, setTab] = useState<'details' | 'comments' | 'history'>('details')
   const [editing, setEditing] = useState(false)
@@ -195,7 +197,8 @@ export default function RecordDrawer({ record, team, onClose, onUpdate, onDelete
       )}
 
       <div className="drawer-enter" style={{
-        position: 'fixed', top: 0, right: 0, bottom: 0, width: 540,
+        position: 'fixed', top: 0, right: 0, bottom: 0,
+        width: isMobile ? '100vw' : 540,
         background: '#fff', zIndex: 201, display: 'flex', flexDirection: 'column',
         boxShadow: '-4px 0 30px rgba(0,0,0,0.12)',
       }}>

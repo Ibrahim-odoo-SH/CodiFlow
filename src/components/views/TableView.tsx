@@ -6,6 +6,7 @@ import { useLanguage } from '@/lib/language-context'
 import type { LicRecord, Profile, Filters } from '@/lib/types'
 import { STAGE_META, BRAND_COLORS, PRIORITY_COLORS } from '@/lib/constants'
 import { daysSince } from '@/lib/utils'
+import { useIsMobile } from '@/lib/use-mobile'
 import FilterBar from '@/components/records/FilterBar'
 import RecordDrawer from '@/components/records/RecordDrawer'
 import RecordForm from '@/components/records/RecordForm'
@@ -48,6 +49,7 @@ function applyFilters(records: LicRecord[], f: Filters): LicRecord[] {
 export default function TableView({ initialRecords, team, initialFilters }: Props) {
   const { profile, can } = useAuth()
   const { t } = useLanguage()
+  const isMobile = useIsMobile()
   const supabase = createClient()
   const [records, setRecords] = useState<LicRecord[]>(initialRecords)
   const [filters, setFilters] = useState<Filters>({ ...DEFAULT_FILTERS, ...initialFilters })
@@ -179,7 +181,7 @@ export default function TableView({ initialRecords, team, initialFilters }: Prop
       </div>
 
       <div style={{ flex: 1, overflow: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff' }}>
+        <table style={{ width: isMobile ? 'max-content' : '100%', minWidth: '100%', borderCollapse: 'collapse', background: '#fff' }}>
           <thead style={{ position: 'sticky', top: 0, background: '#FAFAF8', zIndex: 1 }}>
             <tr>
               <th style={{ ...thStyle, width: 52 }}>{t.table_img}</th>
@@ -306,8 +308,8 @@ export default function TableView({ initialRecords, team, initialFilters }: Prop
       </div>
 
       {creating && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#fff', borderRadius: 14, width: 600, maxHeight: '90vh', overflow: 'auto', boxShadow: '0 8px 40px rgba(0,0,0,0.15)' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 200, display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#fff', borderRadius: isMobile ? '14px 14px 0 0' : 14, width: isMobile ? '100%' : 600, maxHeight: isMobile ? '92vh' : '90vh', overflow: 'auto', boxShadow: '0 8px 40px rgba(0,0,0,0.15)' }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #E5E2DA', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontWeight: 700, fontSize: 15 }}>New Record</span>
               <button onClick={() => setCreating(false)} style={{ background: 'none', border: 'none', fontSize: 20, color: '#9C998F', cursor: 'pointer' }}>×</button>

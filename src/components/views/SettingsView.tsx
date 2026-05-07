@@ -1,9 +1,11 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useLanguage } from '@/lib/language-context'
+import { useIsMobile } from '@/lib/use-mobile'
 
 export default function SettingsView() {
   const { t } = useLanguage()
+  const isMobile = useIsMobile()
   const [values, setValues]   = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving]   = useState(false)
@@ -49,7 +51,7 @@ export default function SettingsView() {
   }
 
   return (
-    <div style={{ padding: 32, maxWidth: 640, margin: '0 auto' }}>
+    <div style={{ padding: isMobile ? 16 : 32, maxWidth: 640, margin: '0 auto' }}>
 
       {/* Page header */}
       <div style={{ marginBottom: 28 }}>

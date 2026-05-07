@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useLanguage } from '@/lib/language-context'
+import { useIsMobile } from '@/lib/use-mobile'
 import type { LicRecord, ActivityLog } from '@/lib/types'
 import { daysSince, fmtDate } from '@/lib/utils'
 import { STAGE_META, PRIORITY_COLORS, BRAND_COLORS } from '@/lib/constants'
@@ -100,6 +101,7 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
   const router = useRouter()
   const supabase = createClient()
   const { t } = useLanguage()
+  const isMobile = useIsMobile()
   const [records, setRecords] = useState<LicRecord[]>(initialRecords)
 
   const active   = records.filter((r) => !r.is_archived)
@@ -211,23 +213,25 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
   ]
 
   return (
-    <div style={{ padding: 24, maxWidth: 1360, margin: '0 auto' }}>
+    <div style={{ padding: isMobile ? 16 : 24, maxWidth: 1360, margin: '0 auto' }}>
 
       {/* ── Header ── */}
-      <div style={{ marginBottom: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <div style={{ marginBottom: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 8 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1A1A2E', margin: 0 }}>Dashboard</h1>
+          <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: '#1A1A2E', margin: 0 }}>Dashboard</h1>
           <p style={{ fontSize: 13, color: '#9C998F', marginTop: 4 }}>
             {active.length} active · {archived.length} archived · {stats.withSamples} with samples
           </p>
         </div>
-        <span style={{ fontSize: 12, color: '#B8B5AD' }}>
-          {new Date().toLocaleString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-        </span>
+        {!isMobile && (
+          <span style={{ fontSize: 12, color: '#B8B5AD' }}>
+            {new Date().toLocaleString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+          </span>
+        )}
       </div>
 
       {/* ── KPI Cards ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 10 : 14, marginBottom: 20 }}>
         {kpiCards.map((c) => (
           <button
             key={c.label}
@@ -248,9 +252,10 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
       </div>
 
       {/* ── Pipeline ── */}
-      <div style={{ background: '#fff', border: '1px solid #E5E2DA', borderRadius: 12, padding: 20, marginBottom: 20 }}>
+      <div style={{ background: '#fff', border: '1px solid #E5E2DA', borderRadius: 12, padding: isMobile ? 14 : 20, marginBottom: 20 }}>
         {sectionTitle('Pipeline by Stage')}
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${PIPELINE_STAGES.length}, 1fr)`, gap: 6 }}>
+        <div style={{ overflowX: isMobile ? 'auto' : 'visible', margin: isMobile ? '0 -4px' : 0 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${PIPELINE_STAGES.length}, 1fr)`, gap: 6, minWidth: isMobile ? 720 : 'auto' }}>
           {stageBreakdown.map(({ stage, count }) => {
             const meta = STAGE_META[stage as keyof typeof STAGE_META]
             const shortLabel = stage
@@ -279,10 +284,11 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
             )
           })}
         </div>
+        </div>
       </div>
 
       {/* ── Analytics row: Brand + Owner + Priority & Waiting ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: isMobile ? 12 : 16, marginBottom: 20 }}>
 
         {/* By Brand */}
         {card('#fff', '#E5E2DA', (
@@ -467,7 +473,7 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
       )}
 
       {/* ── Bottom row: Needs Attention + Recent Activity ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 12 : 16 }}>
 
         {/* Needs Attention */}
         {card('#fff', '#E5E2DA', (

@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { BRANDS, PROPS, STAGES, PRIORITIES, WAITING_OPTS, GENDERS, PROD_TYPES } from '@/lib/constants'
 import { useLanguage } from '@/lib/language-context'
+import { useIsMobile } from '@/lib/use-mobile'
 import type { LicRecord, Profile, Attachment } from '@/lib/types'
 
 interface RecordFormProps {
@@ -70,6 +71,8 @@ export default function RecordForm({
   })
   const [saving, setSaving] = useState(false)
   const { t } = useLanguage()
+  const isMobile = useIsMobile()
+  const cols2 = isMobile ? '1fr' : '1fr 1fr'
   // Pending files for NEW record mode (uploaded after record is created)
   const isNewRecord = !initial?.id
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
@@ -138,14 +141,14 @@ export default function RecordForm({
   return (
     <form onSubmit={handleSubmit} style={{ padding: 20 }}>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: cols2, gap: '0 16px' }}>
         {group(t.form_internalRef, <input required style={fieldStyle} value={data.internal_ref} onChange={(e) => set('internal_ref', e.target.value)} placeholder="e.g. WB-TS-2451" />)}
         {group(t.form_licensorRef, <input style={fieldStyle} value={data.main_licensor_ref} onChange={(e) => set('main_licensor_ref', e.target.value)} />)}
       </div>
 
       {group(t.form_productName, <input required style={fieldStyle} value={data.product_name} onChange={(e) => set('product_name', e.target.value)} />)}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: cols2, gap: '0 16px' }}>
         {group(t.form_productType, (
           <select style={fieldStyle} value={data.product_type} onChange={(e) => set('product_type', e.target.value)}>
             {PROD_TYPES.map((pt) => <option key={pt}>{pt}</option>)}
@@ -159,7 +162,7 @@ export default function RecordForm({
       </div>
 
       {/* Brand & Property with "Add new" */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: cols2, gap: '0 16px' }}>
         <div style={{ marginBottom: 14 }}>
           <label style={labelStyle}>{t.form_brand}</label>
           {showCustomBrand ? (
@@ -216,7 +219,7 @@ export default function RecordForm({
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: cols2, gap: '0 16px' }}>
         {group(t.form_stage, (
           <select style={fieldStyle} value={data.normalized_stage} onChange={(e) => set('normalized_stage', e.target.value as any)}>
             {STAGES.map((s) => <option key={s}>{s}</option>)}
@@ -243,7 +246,7 @@ export default function RecordForm({
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: cols2, gap: '0 16px' }}>
         {group(t.form_owner, (
           <select style={fieldStyle} value={data.owner_name_snapshot} onChange={(e) => {
             const m = team.find((tm) => tm.full_name === e.target.value)
@@ -266,12 +269,12 @@ export default function RecordForm({
       {group(t.form_notes, <textarea style={{ ...fieldStyle, minHeight: 72, resize: 'vertical' }} value={data.notes_summary} onChange={(e) => set('notes_summary', e.target.value)} />)}
       {group(t.form_feedback, <textarea style={{ ...fieldStyle, minHeight: 60, resize: 'vertical' }} value={data.licensor_feedback} onChange={(e) => set('licensor_feedback', e.target.value)} />)}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: cols2, gap: '0 16px' }}>
         {group(t.form_techPackLink, <input style={fieldStyle} value={data.tech_pack_link} onChange={(e) => set('tech_pack_link', e.target.value)} placeholder="https://…" />)}
         {group(t.form_additionalLink, <input style={fieldStyle} value={data.additional_link} onChange={(e) => set('additional_link', e.target.value)} placeholder="https://…" />)}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: cols2, gap: '0 16px' }}>
         {group(t.form_submissionDate, <input type="date" style={fieldStyle} value={data.submission_date ?? ''} onChange={(e) => set('submission_date', e.target.value)} />)}
         {group(t.form_samplesQty, <input type="number" min={0} style={fieldStyle} value={data.samples_requested_qty ?? 0} onChange={(e) => set('samples_requested_qty', e.target.value === '' ? 0 : parseInt(e.target.value) || 0)} />)}
       </div>
@@ -279,7 +282,7 @@ export default function RecordForm({
       {/* Reminder section */}
       <div style={{ background: '#FFFBF0', border: '1px solid #FFE082', borderRadius: 10, padding: 16, marginBottom: 14 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A2E', marginBottom: 12 }}>{t.form_reminder}</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: cols2, gap: '0 16px' }}>
           {group(t.form_reminderDate, (
             <input
               type="date"
