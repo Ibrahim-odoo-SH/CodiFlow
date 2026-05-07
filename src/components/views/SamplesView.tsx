@@ -2,12 +2,14 @@
 import { useState } from 'react'
 import type { LicRecord, Profile } from '@/lib/types'
 import { STAGE_META, BRAND_COLORS } from '@/lib/constants'
+import { useLanguage } from '@/lib/language-context'
 import RecordDrawer from '@/components/records/RecordDrawer'
 import Avatar from '@/components/ui/Avatar'
 
 interface Props { initialRecords: LicRecord[]; team: Profile[] }
 
 export default function SamplesView({ initialRecords, team }: Props) {
+  const { t } = useLanguage()
   const [records, setRecords] = useState(initialRecords)
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<LicRecord | null>(null)
@@ -26,28 +28,28 @@ export default function SamplesView({ initialRecords, team }: Props) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ padding: '10px 20px', background: '#FAFAF8', borderBottom: '1px solid #E5E2DA', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E' }}>🧪 Sample Requests</h2>
+      <div style={{ padding: '10px 20px', background: '#FAFAF8', borderBottom: '1px solid #E5E2DA', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <h2 style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E' }}>{t.samples_title}</h2>
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search…"
+          placeholder={t.samples_search}
           style={{ padding: '5px 10px', border: '1px solid #E5E2DA', borderRadius: 6, fontSize: 13, outline: 'none', width: 200 }}
         />
-        <span style={{ fontSize: 12, color: '#9C998F' }}>{filtered.length} records with samples</span>
+        <span style={{ fontSize: 12, color: '#9C998F' }}>{filtered.length} {t.samples_count}</span>
       </div>
 
       <div style={{ flex: 1, overflow: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff' }}>
           <thead style={{ position: 'sticky', top: 0, background: '#FAFAF8', zIndex: 1 }}>
             <tr>
-              <th style={thStyle}>Product</th>
-              <th style={thStyle}>Ref</th>
-              <th style={thStyle}>Brand / Property</th>
-              <th style={thStyle}>Stage</th>
-              <th style={thStyle}>Owner</th>
-              <th style={thStyle}>Next Action</th>
-              <th style={{ ...thStyle, textAlign: 'center' }}>Sample Qty</th>
+              <th style={thStyle}>{t.samples_product}</th>
+              <th style={thStyle}>{t.samples_ref}</th>
+              <th style={thStyle}>{t.samples_brandProp}</th>
+              <th style={thStyle}>{t.samples_stage}</th>
+              <th style={thStyle}>{t.samples_owner}</th>
+              <th style={thStyle}>{t.samples_nextAction}</th>
+              <th style={{ ...thStyle, textAlign: 'center' }}>{t.samples_qty}</th>
             </tr>
           </thead>
           <tbody>

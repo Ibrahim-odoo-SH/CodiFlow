@@ -196,8 +196,8 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
       color: '#2D4A6F', bg: '#F0F4FA', nav: '/table',
     },
     {
-      label: 'Urgent / High Priority', value: stats.urgentHigh,
-      sub: stats.urgent > 0 ? `${stats.urgent} urgent` : 'No urgent items',
+      label: t.dash_urgentHigh, value: stats.urgentHigh,
+      sub: stats.urgent > 0 ? `${stats.urgent} ${t.dash_urgentCount}` : t.dash_noUrgent,
       color: '#D43C3C', bg: '#FFF0F0', nav: '/table',
     },
     {
@@ -218,9 +218,9 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
       {/* ── Header ── */}
       <div style={{ marginBottom: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 8 }}>
         <div>
-          <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: '#1A1A2E', margin: 0 }}>Dashboard</h1>
+          <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: '#1A1A2E', margin: 0 }}>{t.dash_title}</h1>
           <p style={{ fontSize: 13, color: '#9C998F', marginTop: 4 }}>
-            {active.length} active · {archived.length} archived · {stats.withSamples} with samples
+            {active.length} active · {archived.length} {t.dash_archived} · {stats.withSamples} {t.dash_withSamples}
           </p>
         </div>
         {!isMobile && (
@@ -253,7 +253,7 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
 
       {/* ── Pipeline ── */}
       <div style={{ background: '#fff', border: '1px solid #E5E2DA', borderRadius: 12, padding: isMobile ? 14 : 20, marginBottom: 20 }}>
-        {sectionTitle('Pipeline by Stage')}
+        {sectionTitle(t.dash_pipelineByStage)}
         <div style={{ overflowX: isMobile ? 'auto' : 'visible', margin: isMobile ? '0 -4px' : 0 }}>
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${PIPELINE_STAGES.length}, 1fr)`, gap: 6, minWidth: isMobile ? 720 : 'auto' }}>
           {stageBreakdown.map(({ stage, count }) => {
@@ -293,9 +293,9 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
         {/* By Brand */}
         {card('#fff', '#E5E2DA', (
           <>
-            {sectionTitle('Records by Brand')}
+            {sectionTitle(t.dash_byBrand)}
             {byBrand.length === 0
-              ? <p style={{ color: '#9C998F', fontSize: 13 }}>No records yet.</p>
+              ? <p style={{ color: '#9C998F', fontSize: 13 }}>{t.dash_noRecords}</p>
               : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
                   {byBrand.map(([brand, count]) => (
@@ -323,9 +323,9 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
         {/* By Owner */}
         {card('#fff', '#E5E2DA', (
           <>
-            {sectionTitle('Workload by Owner')}
+            {sectionTitle(t.dash_byOwner)}
             {byOwner.length === 0
-              ? <p style={{ color: '#9C998F', fontSize: 13 }}>No records assigned.</p>
+              ? <p style={{ color: '#9C998F', fontSize: 13 }}>{t.dash_noRecords}</p>
               : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
                   {byOwner.slice(0, 7).map(([owner, count]) => (
@@ -354,7 +354,7 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {card('#fff', '#E5E2DA', (
             <>
-              {sectionTitle('By Priority')}
+              {sectionTitle(t.dash_byPriority)}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                 {byPriority.map(({ priority, count }) => (
                   <button
@@ -380,9 +380,9 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
 
           {card('#fff', '#E5E2DA', (
             <>
-              {sectionTitle('Waiting On')}
+              {sectionTitle(t.dash_waitingOn)}
               {byWaiting.length === 0
-                ? <p style={{ color: '#9C998F', fontSize: 12, margin: 0 }}>Nothing blocked. ✅</p>
+                ? <p style={{ color: '#9C998F', fontSize: 12, margin: 0 }}>{t.dash_nothingBlocked}</p>
                 : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                     {byWaiting.map(([who, count]) => (
@@ -412,7 +412,7 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
       {allReminders.length > 0 && (
         <div style={{ background: '#fff', border: '1px solid #E5E2DA', borderRadius: 12, padding: 20, marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E', margin: 0 }}>🔔 Follow-up Reminders</h3>
+            <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E', margin: 0 }}>{t.dash_followUpReminders}</h3>
             <span style={{ background: '#FFF8E1', color: '#8D6E00', border: '1px solid #FFE082', borderRadius: 20, padding: '1px 9px', fontSize: 11, fontWeight: 700 }}>
               {allReminders.length} {t.dash_pending}
             </span>
@@ -479,7 +479,7 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
         {card('#fff', '#E5E2DA', (
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E', margin: 0 }}>⚠️ Needs Attention</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E', margin: 0 }}>{t.dash_needsAttention}</h3>
               {needsAttention.length > 0 && (
                 <span style={{ background: '#FFF0F0', color: '#C0392B', border: '1px solid #FFB8B8', borderRadius: 20, padding: '1px 8px', fontSize: 11, fontWeight: 700 }}>
                   {needsAttention.length}
@@ -487,7 +487,7 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
               )}
             </div>
             {needsAttention.length === 0
-              ? <p style={{ color: '#9C998F', fontSize: 13, margin: 0 }}>All records are up to date! ✅</p>
+              ? <p style={{ color: '#9C998F', fontSize: 13, margin: 0 }}>{t.dash_allUpToDate}</p>
               : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                   {needsAttention.map((r) => {
@@ -525,7 +525,7 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
                             <span style={{ fontSize: 10, fontWeight: 700, color: '#B87A2B', background: '#FFF5EB', borderRadius: 4, padding: '1px 6px' }}>HIGH</span>
                           )}
                           {stale >= 7 && (
-                            <span style={{ fontSize: 10, color: '#9C998F' }}>{stale}d stale</span>
+                            <span style={{ fontSize: 10, color: '#9C998F' }}>{stale}{t.dash_staleTag}</span>
                           )}
                         </div>
                       </button>
@@ -539,9 +539,9 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
         {/* Recent Activity */}
         {card('#fff', '#E5E2DA', (
           <>
-            {sectionTitle('Recent Activity')}
+            {sectionTitle(t.dash_recentActivity)}
             {logs.length === 0
-              ? <p style={{ color: '#9C998F', fontSize: 13, margin: 0 }}>No activity yet.</p>
+              ? <p style={{ color: '#9C998F', fontSize: 13, margin: 0 }}>{t.dash_noActivity}</p>
               : (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {logs.slice(0, 12).map((l) => (

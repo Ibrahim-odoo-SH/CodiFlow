@@ -1,6 +1,8 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useLanguage } from '@/lib/language-context'
+import type { Translations } from '@/lib/language-context'
 import { STAGES, STAGE_META } from '@/lib/constants'
 import type { Stage } from '@/lib/types'
 
@@ -63,8 +65,9 @@ interface Props {
 
 export default function TemplatesView({ initialTemplates, team: initialTeam }: Props) {
   const supabase = createClient()
+  const { t } = useLanguage()
   const [templates, setTemplates] = useState<Record<string, EmailTemplate>>(
-    Object.fromEntries(initialTemplates.map((t) => [t.stage, t]))
+    Object.fromEntries(initialTemplates.map((tmpl) => [tmpl.stage, tmpl]))
   )
   const [selected, setSelected] = useState<string>(STAGES[0])
   const [saving, setSaving] = useState(false)
@@ -116,7 +119,7 @@ export default function TemplatesView({ initialTemplates, team: initialTeam }: P
   }
 
   async function handleReset() {
-    if (!confirm('Reset this stage to default template?')) return
+    if (!confirm(t.tmpl_resetConfirm)) return
     setTemplates((prev) => {
       const next = { ...prev }
       delete next[selected]
@@ -148,10 +151,12 @@ export default function TemplatesView({ initialTemplates, team: initialTeam }: P
     field,
     label,
     hint,
+    t: tl,
   }: {
     field: keyof Omit<EmailTemplate, 'stage' | 'subject_prefix' | 'intro_message' | 'auto_recipient_ids'>
     label: string
     hint?: string
+    t: Translations
   }) {
     const val = current[field] as boolean
     return (
@@ -183,7 +188,7 @@ export default function TemplatesView({ initialTemplates, team: initialTeam }: P
           background: val ? '#EEF2FA' : '#F4F3EF',
           borderRadius: 20, padding: '2px 8px', fontWeight: 600, flexShrink: 0,
         }}>
-          {val ? 'On' : 'Off'}
+          {val ? tl.settings_on : tl.settings_off}
         </span>
       </label>
     )
@@ -200,8 +205,8 @@ export default function TemplatesView({ initialTemplates, team: initialTeam }: P
         display: 'flex', flexDirection: 'column', flexShrink: 0,
       }}>
         <div style={{ padding: '16px 16px 10px', borderBottom: '1px solid #E5E2DA' }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>✉ Email Templates</div>
-          <div style={{ fontSize: 11, color: '#9C998F', marginTop: 2 }}>One template per stage</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{t.tmpl_title}</div>
+          <div style={{ fontSize: 11, color: '#9C998F', marginTop: 2 }}>{t.tmpl_subtitle}</div>
         </div>
         <div style={{ flex: 1, overflow: 'auto', padding: '8px' }}>
           {editableStages.map((stage) => {
@@ -265,17 +270,17 @@ export default function TemplatesView({ initialTemplates, team: initialTeam }: P
             </span>
             {templates[selected] && (
               <span style={{ fontSize: 11, color: '#2D4A6F', background: '#EEF2FA', borderRadius: 20, padding: '2px 8px', fontWeight: 600 }}>
-                Custom template active
+                {t.tmpl_customActive}
               </span>
             )}
           </div>
 
           {/* Subject line */}
           <div style={{ background: '#fff', border: '1px solid #E5E2DA', borderRadius: 12, padding: 20, marginBottom: 16 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A2E', marginBottom: 14 }}>Subject Line</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A2E', marginBottom: 14 }}>{t.tmpl_subjectLine}</div>
             <div style={{ marginBottom: 12 }}>
               <label style={labelStyle}>
-                Custom Subject Prefix <span style={{ color: '#9C998F', fontWeight: 400 }}>(optional)</span>
+                {t.tmpl_subjectPrefix} <span style={{ color: '#9C998F', fontWeight: 400 }}>{t.tmpl_optional}</span>
               </label>
               <input
                 style={fieldStyle}
@@ -285,16 +290,16 @@ export default function TemplatesView({ initialTemplates, team: initialTeam }: P
               />
             </div>
             <div style={{ background: '#F4F3EF', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
-              <span style={{ color: '#9C998F' }}>Preview: </span>
+              <span style={{ color: '#9C998F' }}>{t.tmpl_preview} </span>
               <span style={{ color: '#1A1A2E', fontWeight: 500 }}>{previewSubject}</span>
             </div>
           </div>
 
           {/* Intro message */}
           <div style={{ background: '#fff', border: '1px solid #E5E2DA', borderRadius: 12, padding: 20, marginBottom: 16 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A2E', marginBottom: 14 }}>Intro Message</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A2E', marginBottom: 14 }}>{t.tmpl_introMessage}</div>
             <label style={labelStyle}>
-              Custom text <span style={{ color: '#9C998F', fontWeight: 400 }}>(appears at the top of the email)</span>
+              {t.tmpl_introHint}
             </label>
             <textarea
               style={{ ...fieldStyle, minHeight: 90, resize: 'vertical', lineHeight: 1.6 }}
@@ -307,22 +312,22 @@ export default function TemplatesView({ initialTemplates, team: initialTeam }: P
           {/* Auto-send Recipients */}
           <div style={{ background: '#fff', border: '1px solid #E5E2DA', borderRadius: 12, padding: 20, marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A2E' }}>⚡ Auto-send Recipients</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A2E' }}>{t.tmpl_autoSend}</div>
               {selectedRecipientCount > 0 && (
                 <span style={{
                   fontSize: 11, fontWeight: 700, color: '#AA9682',
                   background: '#F5EFE9', borderRadius: 20, padding: '3px 10px',
                 }}>
-                  {selectedRecipientCount} selected
+                  {selectedRecipientCount} {t.tmpl_selectedCount}
                 </span>
               )}
             </div>
             <div style={{ fontSize: 12, color: '#9C998F', marginBottom: 16, lineHeight: 1.6 }}>
-              Selected users automatically receive this email whenever a record moves to <strong style={{ color: '#5A5A6A' }}>{selected}</strong>. No manual action needed.
+              {t.tmpl_autoSendHint} <strong style={{ color: '#5A5A6A' }}>{selected}</strong>. {t.tmpl_noManual}
             </div>
 
             {team.length === 0 ? (
-              <div style={{ fontSize: 13, color: '#9C998F', padding: '12px 0' }}>No active team members found.</div>
+              <div style={{ fontSize: 13, color: '#9C998F', padding: '12px 0' }}>{t.tmpl_noTeam}</div>
             ) : (
               <div>
                 {team.map((member) => {
@@ -376,7 +381,7 @@ export default function TemplatesView({ initialTemplates, team: initialTeam }: P
 
                       {isSelected && (
                         <span style={{ fontSize: 11, color: '#AA9682', fontWeight: 600, flexShrink: 0 }}>
-                          Will receive ✓
+                          {t.tmpl_willReceive}
                         </span>
                       )}
                     </div>
@@ -391,50 +396,50 @@ export default function TemplatesView({ initialTemplates, team: initialTeam }: P
                 background: '#F5EFE9', borderRadius: 8, border: '1px solid #E8D5C4',
                 fontSize: 12, color: '#8A6A50', lineHeight: 1.5,
               }}>
-                📧 <strong>{selectedRecipientCount} user{selectedRecipientCount > 1 ? 's' : ''}</strong> will automatically receive this email on every stage change to <strong>{selected}</strong>.
+                📧 <strong>{selectedRecipientCount}</strong> {t.tmpl_autoNote1} <strong>{selected}</strong>.
               </div>
             )}
           </div>
 
           {/* Content toggles */}
           <div style={{ background: '#fff', border: '1px solid #E5E2DA', borderRadius: 12, padding: 20, marginBottom: 20 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A2E', marginBottom: 4 }}>Email Content</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A2E', marginBottom: 4 }}>{t.tmpl_emailContent}</div>
             <div style={{ fontSize: 12, color: '#9C998F', marginBottom: 18 }}>
-              Choose which fields to include in the email for this stage.
+              {t.tmpl_emailContentHint}
             </div>
 
             {/* Product Details */}
             <div style={{ marginBottom: 18 }}>
-              <div style={groupLabelStyle}>📋 Product Details</div>
-              <Toggle field="show_licensor_ref"    label="Licensor Reference" hint="The licensor's own reference number" />
-              <Toggle field="show_product_type"    label="Product Type" hint="e.g. Apparel, Accessories" />
-              <Toggle field="show_gender"          label="Gender / Target" hint="e.g. Unisex, Kids Boys" />
-              <Toggle field="show_contact_name"    label="Contact Name" />
-              <Toggle field="show_submission_date" label="Submission Date" />
-              <Toggle field="show_priority"        label="Priority Level" hint="Low / Medium / High / Urgent" />
-              <Toggle field="show_samples"         label="Samples Quantity" />
+              <div style={groupLabelStyle}>{t.tmpl_productDetails}</div>
+              <Toggle field="show_licensor_ref"    label={t.tmpl_licensorRef}    hint={t.tmpl_licensorRefHint}   t={t} />
+              <Toggle field="show_product_type"    label={t.tmpl_productType}    hint={t.tmpl_productTypeHint}   t={t} />
+              <Toggle field="show_gender"          label={t.tmpl_genderTarget}   hint={t.tmpl_genderTargetHint}  t={t} />
+              <Toggle field="show_contact_name"    label={t.tmpl_contactName}                                    t={t} />
+              <Toggle field="show_submission_date" label={t.tmpl_submissionDate}                                 t={t} />
+              <Toggle field="show_priority"        label={t.tmpl_priorityLevel}  hint={t.tmpl_priorityHint}      t={t} />
+              <Toggle field="show_samples"         label={t.tmpl_samplesQty}                                     t={t} />
             </div>
 
             {/* Workflow */}
             <div style={{ marginBottom: 18 }}>
-              <div style={groupLabelStyle}>⚡ Workflow Status</div>
-              <Toggle field="show_waiting_on"  label="Waiting On" hint="Who is currently blocking progress" />
-              <Toggle field="show_next_action" label="Next Action" hint="What needs to happen next" />
+              <div style={groupLabelStyle}>{t.tmpl_workflow}</div>
+              <Toggle field="show_waiting_on"  label={t.tmpl_waitingOn}   hint={t.tmpl_waitingOnHint}   t={t} />
+              <Toggle field="show_next_action" label={t.tmpl_nextAction}  hint={t.tmpl_nextActionHint}  t={t} />
             </div>
 
             {/* Notes & Feedback */}
             <div style={{ marginBottom: 18 }}>
-              <div style={groupLabelStyle}>📝 Notes & Feedback</div>
-              <Toggle field="show_notes"    label="Notes Summary" />
-              <Toggle field="show_feedback" label="Licensor Feedback" />
+              <div style={groupLabelStyle}>{t.tmpl_notesSection}</div>
+              <Toggle field="show_notes"    label={t.tmpl_notesSummary}     t={t} />
+              <Toggle field="show_feedback" label={t.tmpl_licensorFeedback} t={t} />
             </div>
 
             {/* Links & Images */}
             <div>
-              <div style={groupLabelStyle}>🔗 Links & Images</div>
-              <Toggle field="show_tech_pack"       label="Tech Pack Link" hint="Button linking to tech pack URL" />
-              <Toggle field="show_additional_link" label="Additional Link" hint="Any secondary link on the record" />
-              <Toggle field="show_images"          label="Product Images" hint="Uploaded photos attached to the record" />
+              <div style={groupLabelStyle}>{t.tmpl_linksSection}</div>
+              <Toggle field="show_tech_pack"       label={t.tmpl_techPackLink}    hint={t.tmpl_techPackHint}        t={t} />
+              <Toggle field="show_additional_link" label={t.tmpl_additionalLink}  hint={t.tmpl_additionalHint}      t={t} />
+              <Toggle field="show_images"          label={t.tmpl_productImages}   hint={t.tmpl_productImagesHint}   t={t} />
             </div>
           </div>
 
@@ -449,7 +454,7 @@ export default function TemplatesView({ initialTemplates, team: initialTeam }: P
                 fontWeight: 600, fontSize: 14, cursor: saving ? 'not-allowed' : 'pointer',
               }}
             >
-              {saving ? 'Saving…' : saved ? '✓ Saved!' : 'Save Template'}
+              {saving ? t.tmpl_saving : saved ? t.tmpl_saved : t.tmpl_save}
             </button>
             {templates[selected] && (
               <button
@@ -460,14 +465,14 @@ export default function TemplatesView({ initialTemplates, team: initialTeam }: P
                   fontWeight: 500, fontSize: 13, cursor: 'pointer',
                 }}
               >
-                Reset to Default
+                {t.tmpl_reset}
               </button>
             )}
           </div>
 
           {!templates[selected] && (
             <p style={{ fontSize: 12, color: '#9C998F', marginTop: 14, textAlign: 'center' }}>
-              No custom template set — using defaults for this stage. Save to activate.
+              {t.tmpl_noCustom}
             </p>
           )}
         </div>

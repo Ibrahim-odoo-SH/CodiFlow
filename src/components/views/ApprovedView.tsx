@@ -4,6 +4,7 @@ import type { LicRecord, Profile, Filters } from '@/lib/types'
 import { useAuth } from '@/lib/auth-context'
 import { BRAND_COLORS } from '@/lib/constants'
 import { fmtDate } from '@/lib/utils'
+import { useLanguage } from '@/lib/language-context'
 import FilterBar from '@/components/records/FilterBar'
 import RecordDrawer from '@/components/records/RecordDrawer'
 import Avatar from '@/components/ui/Avatar'
@@ -14,6 +15,7 @@ const DEFAULT_FILTERS: Filters = { search: '', brand: '', property: '', stage: '
 
 export default function ApprovedView({ initialRecords, team }: Props) {
   const { profile, can } = useAuth()
+  const { t } = useLanguage()
   const [records, setRecords] = useState(initialRecords)
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [selected, setSelected] = useState<LicRecord | null>(null)
@@ -53,12 +55,12 @@ export default function ApprovedView({ initialRecords, team }: Props) {
       {/* Green header */}
       <div style={{ background: '#1A7A3A', color: '#fff', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>🏆 Approved Designs</h2>
-          <p style={{ fontSize: 13, opacity: 0.8, margin: '2px 0 0' }}>{filtered.length} fully approved · ready for launch</p>
+          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>{t.approved_title}</h2>
+          <p style={{ fontSize: 13, opacity: 0.8, margin: '2px 0 0' }}>{filtered.length} {t.approved_subtitle}</p>
         </div>
         {can('exportCSV') && (
           <button onClick={exportCSV} style={{ padding: '7px 14px', background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', borderRadius: 7, cursor: 'pointer', fontWeight: 500, fontSize: 13 }}>
-            ↓ Export CSV
+            {t.approved_export}
           </button>
         )}
       </div>
@@ -69,13 +71,13 @@ export default function ApprovedView({ initialRecords, team }: Props) {
         <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff' }}>
           <thead style={{ position: 'sticky', top: 0, background: '#FAFAF8', zIndex: 1 }}>
             <tr>
-              <th style={thStyle}>Ref</th>
-              <th style={thStyle}>Licensor Ref</th>
-              <th style={thStyle}>Product</th>
-              <th style={thStyle}>Brand / Property</th>
-              <th style={thStyle}>Owner</th>
-              <th style={thStyle}>Samples</th>
-              <th style={thStyle}>Notes</th>
+              <th style={thStyle}>{t.table_ref}</th>
+              <th style={thStyle}>{t.approved_licensorRef}</th>
+              <th style={thStyle}>{t.approved_product}</th>
+              <th style={thStyle}>{t.approved_brandProp}</th>
+              <th style={thStyle}>{t.approved_owner}</th>
+              <th style={thStyle}>{t.approved_samples}</th>
+              <th style={thStyle}>{t.approved_notes}</th>
             </tr>
           </thead>
           <tbody>
@@ -105,7 +107,7 @@ export default function ApprovedView({ initialRecords, team }: Props) {
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: '#9C998F' }}>No approved designs yet.</td></tr>
+              <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: '#9C998F' }}>{t.approved_empty}</td></tr>
             )}
           </tbody>
         </table>

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/lib/auth-context'
+import { useLanguage } from '@/lib/language-context'
 import type { Profile, PermKey } from '@/lib/types'
 import { ALL_PERMS } from '@/lib/constants'
 import { getEffectivePerms } from '@/lib/permissions'
@@ -23,6 +24,7 @@ const ROLE_BADGE: Record<string, { bg: string; color: string }> = {
 
 export default function TeamView({ team: initialTeam }: Props) {
   const { profile: me, can, refreshProfile } = useAuth()
+  const { t } = useLanguage()
   const supabase = createClient()
   const [team, setTeam] = useState<Profile[]>(initialTeam ?? [])
   const [loadingTeam, setLoadingTeam] = useState(!initialTeam)
@@ -56,7 +58,7 @@ export default function TeamView({ team: initialTeam }: Props) {
   }
 
   async function removeMember(id: string) {
-    if (!confirm('Remove this team member? They will lose access immediately.')) return
+    if (!confirm(t.team_removeConfirm)) return
     await supabase.from('profiles').delete().eq('id', id)
     setTeam((prev) => prev.filter((m) => m.id !== id))
   }
@@ -77,8 +79,8 @@ export default function TeamView({ team: initialTeam }: Props) {
   async function addMember() {
     setAddError('')
     setAddSuccess('')
-    if (!addEmail.endsWith('@cottondivision.com')) { setAddError('Must be @cottondivision.com'); return }
-    if (!addName.trim()) { setAddError('Name is required'); return }
+    if (!addEmail.endsWith('@cottondivision.com')) { setAddError(t.team_errorDomain); return }
+    if (!addName.trim()) { setAddError(t.team_errorName); return }
     setAdding(true)
 
     try {
@@ -120,7 +122,7 @@ export default function TeamView({ team: initialTeam }: Props) {
   if (loadingTeam) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
-        <p style={{ color: '#7A756E', fontSize: 13 }}>Loading team…</p>
+        <p style={{ color: '#7A756E', fontSize: 13 }}>{t.team_loading}</p>
       </div>
     )
   }
@@ -132,27 +134,27 @@ export default function TeamView({ team: initialTeam }: Props) {
   return (
     <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto' }}>
       <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1C2226' }}>Team & Access</h1>
-        <p style={{ fontSize: 13, color: '#7A756E', marginTop: 2 }}>{team.filter((m) => m.is_active).length} active members</p>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1C2226' }}>{t.team_title}</h1>
+        <p style={{ fontSize: 13, color: '#7A756E', marginTop: 2 }}>{team.filter((m) => m.is_active).length} {t.team_activeMembers}</p>
       </div>
 
       {/* Invite member */}
       <div style={{ background: '#fff', border: '1px solid #D8D4CE', borderRadius: 12, padding: 18, marginBottom: 20 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4, color: '#1C2226' }}>Invite Team Member</div>
-        <p style={{ fontSize: 12, color: '#7A756E', marginBottom: 14 }}>They'll receive an email invitation to set their password and join Codiflow.</p>
+        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4, color: '#1C2226' }}>{t.team_invite}</div>
+        <p style={{ fontSize: 12, color: '#7A756E', marginBottom: 14 }}>{t.team_inviteHint}</p>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <div>
-            <label style={{ fontSize: 11, fontWeight: 600, color: '#7A756E', display: 'block', marginBottom: 4 }}>Full Name</label>
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#7A756E', display: 'block', marginBottom: 4 }}>{t.team_fullName}</label>
             <input value={addName} onChange={(e) => setAddName(e.target.value)} placeholder="Sara Benali"
               style={{ padding: '7px 10px', border: '1px solid #D8D4CE', borderRadius: 7, fontSize: 13, outline: 'none', width: 180, background: '#F7F6F4', color: '#1C2226' }} />
           </div>
           <div>
-            <label style={{ fontSize: 11, fontWeight: 600, color: '#7A756E', display: 'block', marginBottom: 4 }}>Work Email</label>
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#7A756E', display: 'block', marginBottom: 4 }}>{t.team_workEmail}</label>
             <input value={addEmail} onChange={(e) => setAddEmail(e.target.value)} placeholder="sara@cottondivision.com"
               style={{ padding: '7px 10px', border: '1px solid #D8D4CE', borderRadius: 7, fontSize: 13, outline: 'none', width: 240, background: '#F7F6F4', color: '#1C2226' }} />
           </div>
           <div>
-            <label style={{ fontSize: 11, fontWeight: 600, color: '#7A756E', display: 'block', marginBottom: 4 }}>Role</label>
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#7A756E', display: 'block', marginBottom: 4 }}>{t.team_role}</label>
             <select value={addRole} onChange={(e) => setAddRole(e.target.value as any)}
               style={{ padding: '7px 10px', border: '1px solid #D8D4CE', borderRadius: 7, fontSize: 13, outline: 'none', background: '#F7F6F4', color: '#1C2226', cursor: 'pointer' }}>
               <option value="editor">Editor</option>
@@ -162,7 +164,7 @@ export default function TeamView({ team: initialTeam }: Props) {
           </div>
           <button onClick={addMember} disabled={adding}
             style={{ padding: '8px 18px', background: adding ? '#8BA5C4' : '#1C2226', color: '#fff', border: 'none', borderRadius: 7, fontWeight: 600, fontSize: 13, cursor: adding ? 'not-allowed' : 'pointer', transition: 'background 0.15s' }}>
-            {adding ? 'Sending…' : '✉ Send Invite'}
+            {adding ? t.team_sending : t.team_sendInvite}
           </button>
         </div>
         {addError && (
@@ -193,7 +195,7 @@ export default function TeamView({ team: initialTeam }: Props) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   {/* Role badge */}
                   <span style={{ background: badge.bg, color: badge.color, borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 600 }}>
-                    {isCustom ? 'Custom' : member.role}
+                    {isCustom ? t.team_custom : member.role}
                   </span>
 
                   {/* Role select */}
@@ -207,14 +209,14 @@ export default function TeamView({ team: initialTeam }: Props) {
                   {/* Perms toggle */}
                   <button onClick={() => setExpandedPerms(isExpanded ? null : member.id)}
                     style={{ padding: '4px 10px', background: isExpanded ? '#F0EDE8' : '#F7F6F4', border: '1px solid #D8D4CE', borderRadius: 6, fontSize: 12, cursor: 'pointer', color: '#4A5A63', outline: 'none' }}>
-                    ⚙ Permissions
+                    {t.team_permissions}
                   </button>
 
                   {/* Active toggle */}
                   {member.id !== me?.id && (
                     <button onClick={() => toggleActive(member.id, member.is_active)}
                       style={{ padding: '4px 10px', background: member.is_active ? '#EBF5EE' : '#FFF0F0', border: `1px solid ${member.is_active ? '#B8D4C0' : '#FFB8B8'}`, color: member.is_active ? '#5F7D6A' : '#A35C5C', borderRadius: 6, fontSize: 12, cursor: 'pointer', outline: 'none' }}>
-                      {member.is_active ? 'Active' : 'Disabled'}
+                      {member.is_active ? t.team_active : t.team_disabled}
                     </button>
                   )}
 
@@ -224,7 +226,7 @@ export default function TeamView({ team: initialTeam }: Props) {
                       style={{ padding: '4px 8px', background: 'none', border: 'none', color: '#A35C5C', cursor: 'pointer', fontSize: 13 }}>🗑</button>
                   )}
 
-                  <span style={{ fontSize: 11, color: '#B8B5AD' }}>Joined {fmtDate(member.created_at)}</span>
+                  <span style={{ fontSize: 11, color: '#B8B5AD' }}>{t.team_joined} {fmtDate(member.created_at)}</span>
                 </div>
               </div>
 
@@ -232,7 +234,7 @@ export default function TeamView({ team: initialTeam }: Props) {
               {isExpanded && (
                 <div style={{ background: '#F7F6F4', borderTop: '1px solid #EFEDE9', padding: '14px 18px' }}>
                   <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: '#7A756E', alignSelf: 'center' }}>Quick set:</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: '#7A756E', alignSelf: 'center' }}>{t.team_quickSet}</span>
                     {ROLES.map((r) => (
                       <button key={r} onClick={() => snapToRole(member.id, r)}
                         style={{ padding: '4px 10px', background: '#fff', border: '1px solid #D8D4CE', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontWeight: 500, color: '#4A5A63', outline: 'none' }}>
@@ -259,7 +261,7 @@ export default function TeamView({ team: initialTeam }: Props) {
           )
         })}
         {team.length === 0 && (
-          <div style={{ padding: 40, textAlign: 'center', color: '#7A756E', fontSize: 13 }}>No team members yet. Invite someone above.</div>
+          <div style={{ padding: 40, textAlign: 'center', color: '#7A756E', fontSize: 13 }}>{t.team_empty}</div>
         )}
       </div>
     </div>
@@ -267,13 +269,14 @@ export default function TeamView({ team: initialTeam }: Props) {
 }
 
 function ProfileView({ profile, team }: { profile: Profile; team: Profile[] }) {
+  const { t } = useLanguage()
   const perms = getEffectivePerms(profile)
   const categories = [...new Set(ALL_PERMS.map((p) => p.cat))]
   const badge = { bg: '#F0EDE8', color: '#1C2226' }
 
   return (
     <div style={{ padding: 24, maxWidth: 800, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1C2226', marginBottom: 20 }}>My Profile</h1>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1C2226', marginBottom: 20 }}>{t.profile_title}</h1>
 
       <div style={{ background: '#fff', border: '1px solid #D8D4CE', borderRadius: 12, padding: 24, marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
@@ -285,7 +288,7 @@ function ProfileView({ profile, team }: { profile: Profile; team: Profile[] }) {
           </div>
         </div>
 
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: '#1C2226' }}>My Permissions</div>
+        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: '#1C2226' }}>{t.profile_myPerms}</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px 20px' }}>
           {categories.map((cat) => (
             <div key={cat}>
@@ -302,7 +305,7 @@ function ProfileView({ profile, team }: { profile: Profile; team: Profile[] }) {
       </div>
 
       <div style={{ background: '#fff', border: '1px solid #D8D4CE', borderRadius: 12, overflow: 'hidden' }}>
-        <div style={{ padding: '12px 18px', borderBottom: '1px solid #EFEDE9', fontSize: 13, fontWeight: 700, color: '#1C2226' }}>Team Directory</div>
+        <div style={{ padding: '12px 18px', borderBottom: '1px solid #EFEDE9', fontSize: 13, fontWeight: 700, color: '#1C2226' }}>{t.profile_directory}</div>
         {team.filter((m) => m.is_active).map((m, i) => (
           <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 18px', borderBottom: i < team.filter(x => x.is_active).length - 1 ? '1px solid #EFEDE9' : 'none' }}>
             <Avatar name={m.full_name} size={30} />
