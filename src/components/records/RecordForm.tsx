@@ -70,7 +70,7 @@ export default function RecordForm({
     }
   })
   const [saving, setSaving] = useState(false)
-  const { t } = useLanguage()
+  const { t, stageLabel } = useLanguage()
   const isMobile = useIsMobile()
   const cols2 = isMobile ? '1fr' : '1fr 1fr'
   // Pending files for NEW record mode (uploaded after record is created)
@@ -222,7 +222,7 @@ export default function RecordForm({
       <div style={{ display: 'grid', gridTemplateColumns: cols2, gap: '0 16px' }}>
         {group(t.form_stage, (
           <select style={fieldStyle} value={data.normalized_stage} onChange={(e) => set('normalized_stage', e.target.value as any)}>
-            {STAGES.map((s) => <option key={s}>{s}</option>)}
+            {STAGES.map((s) => <option key={s} value={s}>{stageLabel(s)}</option>)}
           </select>
         ))}
         {group('Priority', (

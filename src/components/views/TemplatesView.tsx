@@ -65,7 +65,7 @@ interface Props {
 
 export default function TemplatesView({ initialTemplates, team: initialTeam }: Props) {
   const supabase = createClient()
-  const { t } = useLanguage()
+  const { t, stageLabel } = useLanguage()
   const [templates, setTemplates] = useState<Record<string, EmailTemplate>>(
     Object.fromEntries(initialTemplates.map((tmpl) => [tmpl.stage, tmpl]))
   )
@@ -234,7 +234,7 @@ export default function TemplatesView({ initialTemplates, team: initialTeam }: P
                     color: isActive ? '#2D4A6F' : '#1A1A2E',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
-                    {stage.replace('PreProduction Samples ', '').replace('Modifications Requested', 'Modifications')}
+                    {stageLabel(stage)}
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
@@ -266,7 +266,7 @@ export default function TemplatesView({ initialTemplates, team: initialTeam }: P
               background: meta?.bg, color: meta?.color, border: `1px solid ${meta?.border}`,
               borderRadius: 20, padding: '4px 14px', fontSize: 13, fontWeight: 600,
             }}>
-              {meta?.icon} {selected}
+              {meta?.icon} {stageLabel(selected)}
             </span>
             {templates[selected] && (
               <span style={{ fontSize: 11, color: '#2D4A6F', background: '#EEF2FA', borderRadius: 20, padding: '2px 8px', fontWeight: 600 }}>
@@ -323,7 +323,7 @@ export default function TemplatesView({ initialTemplates, team: initialTeam }: P
               )}
             </div>
             <div style={{ fontSize: 12, color: '#9C998F', marginBottom: 16, lineHeight: 1.6 }}>
-              {t.tmpl_autoSendHint} <strong style={{ color: '#5A5A6A' }}>{selected}</strong>. {t.tmpl_noManual}
+              {t.tmpl_autoSendHint} <strong style={{ color: '#5A5A6A' }}>{stageLabel(selected)}</strong>. {t.tmpl_noManual}
             </div>
 
             {team.length === 0 ? (

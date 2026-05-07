@@ -21,7 +21,7 @@ const inp: React.CSSProperties = {
 }
 
 export default function FilterBar({ filters, onChange, owners, hideStage, extraActions }: FilterBarProps) {
-  const { t } = useLanguage()
+  const { t, stageLabel } = useLanguage()
   const set = (key: keyof Filters, val: any) => onChange({ ...filters, [key]: val })
 
   const hasActive = filters.search || filters.brand || filters.property || filters.stage ||
@@ -56,7 +56,7 @@ export default function FilterBar({ filters, onChange, owners, hideStage, extraA
       {!hideStage && (
         <select style={sel} value={filters.stage} onChange={(e) => set('stage', e.target.value)}>
           <option value="">{t.filter_allStages}</option>
-          {STAGES.map((s) => <option key={s}>{s}</option>)}
+          {STAGES.map((s) => <option key={s} value={s}>{stageLabel(s)}</option>)}
         </select>
       )}
 

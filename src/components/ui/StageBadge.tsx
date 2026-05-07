@@ -1,8 +1,10 @@
 'use client'
 import { STAGE_META } from '@/lib/constants'
+import { useLanguage } from '@/lib/language-context'
 import type { Stage } from '@/lib/types'
 
 export default function StageBadge({ stage }: { stage: Stage }) {
+  const { stageLabel } = useLanguage()
   const m = STAGE_META[stage] ?? STAGE_META['Design Sent']
   return (
     <span style={{
@@ -10,7 +12,7 @@ export default function StageBadge({ stage }: { stage: Stage }) {
       borderRadius: 20, padding: '2px 10px', fontSize: 12, fontWeight: 600,
       whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 4,
     }}>
-      {m.icon} {stage}
+      {m.icon} {stageLabel(stage)}
     </span>
   )
 }

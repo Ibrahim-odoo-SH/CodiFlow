@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/lib/auth-context'
 import type { LicRecord, Profile, Filters, Stage } from '@/lib/types'
 import { BOARD_STAGES, STAGE_META, BRAND_COLORS, PRIORITY_COLORS } from '@/lib/constants'
+import { useLanguage } from '@/lib/language-context'
 import { daysSince } from '@/lib/utils'
 import FilterBar from '@/components/records/FilterBar'
 import RecordDrawer from '@/components/records/RecordDrawer'
@@ -31,6 +32,7 @@ function applyFilters(records: LicRecord[], f: Filters) {
 
 export default function BoardView({ initialRecords, team }: Props) {
   const { profile, can } = useAuth()
+  const { stageLabel } = useLanguage()
   const supabase = createClient()
   const [records, setRecords] = useState<LicRecord[]>(initialRecords)
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
@@ -74,7 +76,7 @@ export default function BoardView({ initialRecords, team }: Props) {
               return (
                 <div key={stage} style={{ width: 240, flexShrink: 0 }}>
                   <div style={{ background: sm.bg, border: `1px solid ${sm.border}`, borderRadius: '10px 10px 0 0', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: sm.color }}>{sm.icon} {stage}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: sm.color }}>{sm.icon} {stageLabel(stage)}</span>
                     <span style={{ background: sm.color, color: '#fff', borderRadius: 10, padding: '1px 7px', fontSize: 11, fontWeight: 700 }}>{cols.length}</span>
                   </div>
                   <Droppable droppableId={stage}>

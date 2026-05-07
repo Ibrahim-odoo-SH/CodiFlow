@@ -598,6 +598,20 @@ const T = {
 
 export type Translations = typeof T['en']
 
+// ── Stage name translations (display only — DB values stay in English) ─────────
+const STAGE_LABELS_FR: Record<string, string> = {
+  'Design Sent':                   'Design envoyé',
+  'Modifications Requested':       'Modifications demandées',
+  'Concept Approved':              'Concept approuvé',
+  'PreProduction Samples PPS':     'Échantillons préproduction',
+  'PPS Shipped':                   'PPS expédié',
+  'Proceed to Production':         'Passer en production',
+  'Production Samples':            'Échantillons production',
+  'Production Samples Shipped':    'Échantillons expédiés',
+  'Fully Approved':                'Entièrement approuvé',
+  'Archived':                      'Archivé',
+}
+
 // ── Context ────────────────────────────────────────────────────────────────────
 interface LangCtx { lang: Lang; setLang: (l: Lang) => void; t: Translations }
 const Ctx = createContext<LangCtx>({ lang: 'en', setLang: () => {}, t: T.en })
@@ -619,5 +633,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useLanguage() {
-  return useContext(Ctx)
+  const ctx = useContext(Ctx)
+  /** Returns the display label for a stage name in the current language */
+  function stageLabel(stage: string): string {
+    if (ctx.lang === 'fr') return STAGE_LABELS_FR[stage] ?? stage
+    return stage
+  }
+  return { ...ctx, stageLabel }
 }

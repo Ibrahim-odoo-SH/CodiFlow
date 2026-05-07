@@ -26,7 +26,7 @@ const ACCEPTED = '.jpg,.jpeg,.png,.gif,.webp,.pdf,.svg,.ai,.psd,.eps'
 
 export default function RecordDrawer({ record, team, onClose, onUpdate, onDelete }: DrawerProps) {
   const { profile, can } = useAuth()
-  const { t } = useLanguage()
+  const { t, stageLabel } = useLanguage()
   const isMobile = useIsMobile()
   const supabase = createClient()
   const [tab, setTab] = useState<'details' | 'comments' | 'history'>('details')
@@ -268,7 +268,7 @@ export default function RecordDrawer({ record, team, onClose, onUpdate, onDelete
               uploading={uploading}
             />
           ) : tab === 'details' ? (
-            <DetailsTab record={record} attachments={attachments} onStageChange={handleStageChange} onPriorityChange={handlePriorityChange} onUpload={handleUpload} onDeleteAttachment={deleteAttachment} onSetCover={setCoverImage} settingCover={settingCover} uploading={uploading} can={can} t={t} />
+            <DetailsTab record={record} attachments={attachments} onStageChange={handleStageChange} onPriorityChange={handlePriorityChange} onUpload={handleUpload} onDeleteAttachment={deleteAttachment} onSetCover={setCoverImage} settingCover={settingCover} uploading={uploading} can={can} t={t} stageLabel={stageLabel} />
           ) : tab === 'comments' ? (
             <CommentsTab comments={comments} newComment={newComment} setNewComment={setNewComment} onPost={postComment} posting={postingComment} can={can} t={t} />
           ) : (
@@ -296,9 +296,10 @@ interface DetailsTabProps {
   uploading: boolean
   can: (key: PermKey) => boolean
   t: Translations
+  stageLabel: (stage: string) => string
 }
 
-function DetailsTab({ record, attachments, onStageChange, onPriorityChange, onUpload, onDeleteAttachment, onSetCover, settingCover, uploading, can, t }: DetailsTabProps) {
+function DetailsTab({ record, attachments, onStageChange, onPriorityChange, onUpload, onDeleteAttachment, onSetCover, settingCover, uploading, can, t, stageLabel }: DetailsTabProps) {
   const kv = (label: string, val: React.ReactNode) => val ? (
     <div style={{ display: 'flex', gap: 8, padding: '7px 0', borderBottom: '1px solid #F0EDE8' }}>
       <span style={{ minWidth: 140, fontSize: 12, color: '#9C998F', flexShrink: 0 }}>{label}</span>
@@ -315,7 +316,7 @@ function DetailsTab({ record, attachments, onStageChange, onPriorityChange, onUp
             <div style={{ fontSize: 11, fontWeight: 600, color: '#9C998F', marginBottom: 4 }}>{t.drawer_moveStage}</div>
             <select value={record.normalized_stage} onChange={(e) => onStageChange(e.target.value)}
               style={{ width: '100%', padding: '7px 10px', border: '1px solid #E5E2DA', borderRadius: 7, fontSize: 13, background: '#FAFAF8', cursor: 'pointer' }}>
-              {STAGES.map((s) => <option key={s}>{s}</option>)}
+              {STAGES.map((s) => <option key={s} value={s}>{stageLabel(s)}</option>)}
             </select>
           </div>
           {(can('editPriority') || can('editRecords')) && (

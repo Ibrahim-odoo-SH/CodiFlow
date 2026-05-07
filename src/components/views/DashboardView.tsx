@@ -33,6 +33,7 @@ function ReminderCard({ record, accent, bg, border, onDone, onNavigate, markDone
   onNavigate: () => void
   markDoneLabel: string
 }) {
+  const { stageLabel } = useLanguage()
   const sm = STAGE_META[record.normalized_stage]
   return (
     <div style={{
@@ -56,7 +57,7 @@ function ReminderCard({ record, accent, bg, border, onDone, onNavigate, markDone
           background: sm?.bg, color: sm?.color, border: `1px solid ${sm?.border}`,
           borderRadius: 20, padding: '2px 7px', fontSize: 10, fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap',
         }}>
-          {sm?.icon} {record.normalized_stage}
+          {sm?.icon} {stageLabel(record.normalized_stage)}
         </span>
       </div>
 
@@ -100,7 +101,7 @@ function sectionTitle(title: string) {
 export default function DashboardView({ records: initialRecords, logs }: Props) {
   const router = useRouter()
   const supabase = createClient()
-  const { t } = useLanguage()
+  const { t, stageLabel } = useLanguage()
   const isMobile = useIsMobile()
   const [records, setRecords] = useState<LicRecord[]>(initialRecords)
 
@@ -258,12 +259,6 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${PIPELINE_STAGES.length}, 1fr)`, gap: 6, minWidth: isMobile ? 720 : 'auto' }}>
           {stageBreakdown.map(({ stage, count }) => {
             const meta = STAGE_META[stage as keyof typeof STAGE_META]
-            const shortLabel = stage
-              .replace('PreProduction Samples ', '')
-              .replace(' Samples Shipped', ' Shipped')
-              .replace('Modifications Requested', 'Modifications')
-              .replace('Concept Approved', 'Concept OK')
-              .replace('Proceed to Production', 'To Production')
             return (
               <button
                 key={stage}
@@ -279,7 +274,7 @@ export default function DashboardView({ records: initialRecords, logs }: Props) 
               >
                 <div style={{ fontSize: 18, marginBottom: 4 }}>{meta?.icon}</div>
                 <div style={{ fontSize: 26, fontWeight: 800, color: count > 0 ? meta?.color : '#D0CCC5' }}>{count}</div>
-                <div style={{ fontSize: 10, color: '#9C998F', marginTop: 5, lineHeight: 1.3 }}>{shortLabel}</div>
+                <div style={{ fontSize: 10, color: '#9C998F', marginTop: 5, lineHeight: 1.3 }}>{stageLabel(stage)}</div>
               </button>
             )
           })}
